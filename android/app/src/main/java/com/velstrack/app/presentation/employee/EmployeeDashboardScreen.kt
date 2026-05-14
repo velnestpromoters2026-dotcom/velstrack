@@ -1,5 +1,9 @@
 package com.velstrack.app.presentation.employee
 
+import android.Manifest
+import android.content.pm.PackageManager
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -8,12 +12,18 @@ import androidx.compose.material.icons.filled.Call
 import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.velstrack.app.core.theme.DeepSpaceBlack
 import com.velstrack.app.core.theme.NeonCyan
@@ -29,6 +39,33 @@ fun EmployeeDashboardScreen(
     viewModel: EmployeeDashboardViewModel = hiltViewModel(),
     authViewModel: AuthViewModel = hiltViewModel()
 ) {
+    val context = LocalContext.current
+    var hasPermission by remember {
+        mutableStateOf(
+            ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.READ_CALL_LOG
+            ) == PackageManager.PERMISSION_GRANTED
+        )
+    }
+
+    val permissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        hasPermission = isGranted
+        if (isGranted) {
+            viewModel.startCallSyncWorker()
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        if (!hasPermission) {
+            permissionLauncher.launch(Manifest.permission.READ_CALL_LOG)
+        } else {
+            viewModel.startCallSyncWorker()
+        }
+    }
+
     val dashboardState by viewModel.dashboardState.collectAsState()
 
     Scaffold(
@@ -57,7 +94,18 @@ fun EmployeeDashboardScreen(
                 .background(DeepSpaceBlack)
                 .padding(paddingValues)
         ) {
-            when (dashboardState) {
+            if (!hasPermission) {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    EmptyStateCard(
+                        title = "Permission Required",
+                        message = "Velstrack needs access to your call logs to automatically track and sync your sales calls.",
+                        icon = Icons.Default.Call,
+                        actionText = "Grant Permission",
+                        onActionClick = { permissionLauncher.launch(Manifest.permission.READ_CALL_LOG) }
+                    )
+                }
+            } else {
+                when (dashboardState) {
                 is UiState.Loading -> {
                     CircularProgressIndicator(
                         modifier = Modifier.align(Alignment.Center),
@@ -161,6 +209,7 @@ fun EmployeeDashboardScreen(
                     }
                 }
                 else -> Unit
+                }
             }
         }
     }

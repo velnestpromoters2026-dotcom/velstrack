@@ -23,7 +23,7 @@ interface ApiService {
     suspend fun logout(): Response<ApiResponse<Unit>>
 
     @POST("calls/sync")
-    suspend fun syncCalls(@Body request: Map<String, Any>): Response<ApiResponse<Any>>
+    suspend fun syncCalls(@Body request: SyncCallRequest): Response<ApiResponse<Any>>
 
     @GET("admin/dashboard")
     suspend fun getAdminDashboardStats(): Response<ApiResponse<AdminDashboardDto>>

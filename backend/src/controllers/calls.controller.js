@@ -5,7 +5,7 @@ export const syncCalls = async (req, res) => {
     const employeeId = req.user._id;
 
     if (!calls || !Array.isArray(calls)) {
-        return res.status(400).json({ message: 'Invalid payload' });
+        return res.status(400).json({ success: false, message: 'Invalid payload', data: null });
     }
 
     try {
@@ -20,9 +20,13 @@ export const syncCalls = async (req, res) => {
 
         await CallLog.insertMany(formattedCalls);
         
-        res.status(201).json({ message: 'Calls synced successfully', syncedCount: formattedCalls.length });
+        res.status(201).json({ 
+            success: true, 
+            message: 'Calls synced successfully', 
+            data: { syncedCount: formattedCalls.length } 
+        });
     } catch (error) {
         console.error('Sync Error:', error);
-        res.status(500).json({ message: 'Error syncing calls' });
+        res.status(500).json({ success: false, message: 'Error syncing calls: ' + error.message, data: null });
     }
 };
