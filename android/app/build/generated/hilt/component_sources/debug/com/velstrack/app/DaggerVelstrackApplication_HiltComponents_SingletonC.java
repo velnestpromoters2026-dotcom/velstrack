@@ -7,7 +7,15 @@ import androidx.fragment.app.Fragment;
 import androidx.hilt.work.HiltWrapper_WorkerFactoryModule;
 import androidx.lifecycle.SavedStateHandle;
 import androidx.lifecycle.ViewModel;
+import com.velstrack.app.core.datastore.SessionManager;
+import com.velstrack.app.data.remote.api.ApiService;
 import com.velstrack.app.di.NetworkModule;
+import com.velstrack.app.di.NetworkModule_ProvideApiServiceFactory;
+import com.velstrack.app.di.NetworkModule_ProvideAuthInterceptorFactory;
+import com.velstrack.app.di.NetworkModule_ProvideOkHttpClientFactory;
+import com.velstrack.app.di.NetworkModule_ProvideRetrofitFactory;
+import com.velstrack.app.presentation.auth.AuthViewModel;
+import com.velstrack.app.presentation.auth.AuthViewModel_HiltModules_KeyModule_ProvideFactory;
 import dagger.hilt.android.ActivityRetainedLifecycle;
 import dagger.hilt.android.ViewModelLifecycle;
 import dagger.hilt.android.flags.HiltWrapper_FragmentGetContextFix_FragmentGetContextFixModule;
@@ -22,6 +30,7 @@ import dagger.hilt.android.internal.lifecycle.DefaultViewModelFactories;
 import dagger.hilt.android.internal.lifecycle.DefaultViewModelFactories_InternalFactoryFactory_Factory;
 import dagger.hilt.android.internal.managers.ActivityRetainedComponentManager_LifecycleModule_ProvideActivityRetainedLifecycleFactory;
 import dagger.hilt.android.internal.modules.ApplicationContextModule;
+import dagger.hilt.android.internal.modules.ApplicationContextModule_ProvideContextFactory;
 import dagger.internal.DaggerGenerated;
 import dagger.internal.DoubleCheck;
 import dagger.internal.Preconditions;
@@ -30,6 +39,9 @@ import java.util.Map;
 import java.util.Set;
 import javax.annotation.processing.Generated;
 import javax.inject.Provider;
+import okhttp3.Interceptor;
+import okhttp3.OkHttpClient;
+import retrofit2.Retrofit;
 
 @DaggerGenerated
 @Generated(
@@ -50,20 +62,14 @@ public final class DaggerVelstrackApplication_HiltComponents_SingletonC {
     return new Builder();
   }
 
-  public static VelstrackApplication_HiltComponents.SingletonC create() {
-    return new Builder().build();
-  }
-
   public static final class Builder {
+    private ApplicationContextModule applicationContextModule;
+
     private Builder() {
     }
 
-    /**
-     * @deprecated This module is declared, but an instance is not used in the component. This method is a no-op. For more, see https://dagger.dev/unused-modules.
-     */
-    @Deprecated
     public Builder applicationContextModule(ApplicationContextModule applicationContextModule) {
-      Preconditions.checkNotNull(applicationContextModule);
+      this.applicationContextModule = Preconditions.checkNotNull(applicationContextModule);
       return this;
     }
 
@@ -97,7 +103,8 @@ public final class DaggerVelstrackApplication_HiltComponents_SingletonC {
     }
 
     public VelstrackApplication_HiltComponents.SingletonC build() {
-      return new SingletonCImpl();
+      Preconditions.checkBuilderRequirement(applicationContextModule, ApplicationContextModule.class);
+      return new SingletonCImpl(applicationContextModule);
     }
   }
 
@@ -381,12 +388,12 @@ public final class DaggerVelstrackApplication_HiltComponents_SingletonC {
 
     @Override
     public DefaultViewModelFactories.InternalFactoryFactory getHiltInternalFactoryFactory() {
-      return DefaultViewModelFactories_InternalFactoryFactory_Factory.newInstance(Collections.<String>emptySet(), new ViewModelCBuilder(singletonCImpl, activityRetainedCImpl));
+      return DefaultViewModelFactories_InternalFactoryFactory_Factory.newInstance(getViewModelKeys(), new ViewModelCBuilder(singletonCImpl, activityRetainedCImpl));
     }
 
     @Override
     public Set<String> getViewModelKeys() {
-      return Collections.<String>emptySet();
+      return Collections.<String>singleton(AuthViewModel_HiltModules_KeyModule_ProvideFactory.provide());
     }
 
     @Override
@@ -412,18 +419,56 @@ public final class DaggerVelstrackApplication_HiltComponents_SingletonC {
 
     private final ViewModelCImpl viewModelCImpl = this;
 
+    private Provider<AuthViewModel> authViewModelProvider;
+
     private ViewModelCImpl(SingletonCImpl singletonCImpl,
         ActivityRetainedCImpl activityRetainedCImpl, SavedStateHandle savedStateHandleParam,
         ViewModelLifecycle viewModelLifecycleParam) {
       this.singletonCImpl = singletonCImpl;
       this.activityRetainedCImpl = activityRetainedCImpl;
 
+      initialize(savedStateHandleParam, viewModelLifecycleParam);
 
+    }
+
+    @SuppressWarnings("unchecked")
+    private void initialize(final SavedStateHandle savedStateHandleParam,
+        final ViewModelLifecycle viewModelLifecycleParam) {
+      this.authViewModelProvider = new SwitchingProvider<>(singletonCImpl, activityRetainedCImpl, viewModelCImpl, 0);
     }
 
     @Override
     public Map<String, Provider<ViewModel>> getHiltViewModelMap() {
-      return Collections.<String, Provider<ViewModel>>emptyMap();
+      return Collections.<String, Provider<ViewModel>>singletonMap("com.velstrack.app.presentation.auth.AuthViewModel", ((Provider) authViewModelProvider));
+    }
+
+    private static final class SwitchingProvider<T> implements Provider<T> {
+      private final SingletonCImpl singletonCImpl;
+
+      private final ActivityRetainedCImpl activityRetainedCImpl;
+
+      private final ViewModelCImpl viewModelCImpl;
+
+      private final int id;
+
+      SwitchingProvider(SingletonCImpl singletonCImpl, ActivityRetainedCImpl activityRetainedCImpl,
+          ViewModelCImpl viewModelCImpl, int id) {
+        this.singletonCImpl = singletonCImpl;
+        this.activityRetainedCImpl = activityRetainedCImpl;
+        this.viewModelCImpl = viewModelCImpl;
+        this.id = id;
+      }
+
+      @SuppressWarnings("unchecked")
+      @Override
+      public T get() {
+        switch (id) {
+          case 0: // com.velstrack.app.presentation.auth.AuthViewModel 
+          return (T) new AuthViewModel(singletonCImpl.provideApiServiceProvider.get(), singletonCImpl.sessionManagerProvider.get());
+
+          default: throw new AssertionError(id);
+        }
+      }
     }
   }
 
@@ -496,11 +541,33 @@ public final class DaggerVelstrackApplication_HiltComponents_SingletonC {
   }
 
   private static final class SingletonCImpl extends VelstrackApplication_HiltComponents.SingletonC {
+    private final ApplicationContextModule applicationContextModule;
+
     private final SingletonCImpl singletonCImpl = this;
 
-    private SingletonCImpl() {
+    private Provider<SessionManager> sessionManagerProvider;
 
+    private Provider<Interceptor> provideAuthInterceptorProvider;
 
+    private Provider<OkHttpClient> provideOkHttpClientProvider;
+
+    private Provider<Retrofit> provideRetrofitProvider;
+
+    private Provider<ApiService> provideApiServiceProvider;
+
+    private SingletonCImpl(ApplicationContextModule applicationContextModuleParam) {
+      this.applicationContextModule = applicationContextModuleParam;
+      initialize(applicationContextModuleParam);
+
+    }
+
+    @SuppressWarnings("unchecked")
+    private void initialize(final ApplicationContextModule applicationContextModuleParam) {
+      this.sessionManagerProvider = DoubleCheck.provider(new SwitchingProvider<SessionManager>(singletonCImpl, 4));
+      this.provideAuthInterceptorProvider = DoubleCheck.provider(new SwitchingProvider<Interceptor>(singletonCImpl, 3));
+      this.provideOkHttpClientProvider = DoubleCheck.provider(new SwitchingProvider<OkHttpClient>(singletonCImpl, 2));
+      this.provideRetrofitProvider = DoubleCheck.provider(new SwitchingProvider<Retrofit>(singletonCImpl, 1));
+      this.provideApiServiceProvider = DoubleCheck.provider(new SwitchingProvider<ApiService>(singletonCImpl, 0));
     }
 
     @Override
@@ -520,6 +587,40 @@ public final class DaggerVelstrackApplication_HiltComponents_SingletonC {
     @Override
     public ServiceComponentBuilder serviceComponentBuilder() {
       return new ServiceCBuilder(singletonCImpl);
+    }
+
+    private static final class SwitchingProvider<T> implements Provider<T> {
+      private final SingletonCImpl singletonCImpl;
+
+      private final int id;
+
+      SwitchingProvider(SingletonCImpl singletonCImpl, int id) {
+        this.singletonCImpl = singletonCImpl;
+        this.id = id;
+      }
+
+      @SuppressWarnings("unchecked")
+      @Override
+      public T get() {
+        switch (id) {
+          case 0: // com.velstrack.app.data.remote.api.ApiService 
+          return (T) NetworkModule_ProvideApiServiceFactory.provideApiService(singletonCImpl.provideRetrofitProvider.get());
+
+          case 1: // retrofit2.Retrofit 
+          return (T) NetworkModule_ProvideRetrofitFactory.provideRetrofit(singletonCImpl.provideOkHttpClientProvider.get());
+
+          case 2: // okhttp3.OkHttpClient 
+          return (T) NetworkModule_ProvideOkHttpClientFactory.provideOkHttpClient(singletonCImpl.provideAuthInterceptorProvider.get());
+
+          case 3: // okhttp3.Interceptor 
+          return (T) NetworkModule_ProvideAuthInterceptorFactory.provideAuthInterceptor(singletonCImpl.sessionManagerProvider.get());
+
+          case 4: // com.velstrack.app.core.datastore.SessionManager 
+          return (T) new SessionManager(ApplicationContextModule_ProvideContextFactory.provideContext(singletonCImpl.applicationContextModule));
+
+          default: throw new AssertionError(id);
+        }
+      }
     }
   }
 }

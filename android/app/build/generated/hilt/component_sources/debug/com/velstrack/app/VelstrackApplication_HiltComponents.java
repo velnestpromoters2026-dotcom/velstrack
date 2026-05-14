@@ -2,6 +2,7 @@ package com.velstrack.app;
 
 import androidx.hilt.work.HiltWrapper_WorkerFactoryModule;
 import com.velstrack.app.di.NetworkModule;
+import com.velstrack.app.presentation.auth.AuthViewModel_HiltModules;
 import dagger.Binds;
 import dagger.Component;
 import dagger.Module;
@@ -153,6 +154,7 @@ public final class VelstrackApplication_HiltComponents {
 
   @Subcomponent(
       modules = {
+          AuthViewModel_HiltModules.KeyModule.class,
           HiltWrapper_ActivityRetainedComponentManager_LifecycleModule.class,
           ActivityCBuilderModule.class,
           ViewModelCBuilderModule.class
@@ -190,7 +192,10 @@ public final class VelstrackApplication_HiltComponents {
   }
 
   @Subcomponent(
-      modules = HiltWrapper_HiltViewModelFactory_ViewModelModule.class
+      modules = {
+          AuthViewModel_HiltModules.BindsModule.class,
+          HiltWrapper_HiltViewModelFactory_ViewModelModule.class
+      }
   )
   @ViewModelScoped
   public abstract static class ViewModelC implements ViewModelComponent,
