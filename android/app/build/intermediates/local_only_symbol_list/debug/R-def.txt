@@ -8,7 +8,10 @@ color purple_700
 color teal_200
 color teal_700
 color white
+drawable ic_launcher_background
 drawable ic_launcher_foreground
+drawable ic_launcher_monochrome
+drawable ic_velstrack_foreground
 mipmap ic_launcher
 mipmap ic_launcher_round
 string app_name

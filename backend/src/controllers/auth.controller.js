@@ -10,17 +10,21 @@ export const loginUser = async (req, res) => {
             await user.save();
             
             res.json({
-                _id: user._id,
-                email: user.email,
-                role: user.role,
-                profile: user.profile,
-                token: generateToken(user._id, user.role),
+                success: true,
+                message: "Login successful",
+                data: {
+                    _id: user._id,
+                    email: user.email,
+                    role: user.role,
+                    profile: user.profile,
+                    token: generateToken(user._id, user.role),
+                }
             });
         } else {
-            res.status(401).json({ message: 'Invalid email or password' });
+            res.status(401).json({ success: false, message: 'Invalid email or password' });
         }
     } catch (error) {
-        res.status(500).json({ message: 'Server Error' });
+        res.status(500).json({ success: false, message: 'Server Error' });
     }
 };
 
@@ -38,15 +42,19 @@ export const registerUser = async (req, res) => {
         
         if (user) {
             res.status(201).json({
-                _id: user._id,
-                email: user.email,
-                role: user.role,
-                token: generateToken(user._id, user.role),
+                success: true,
+                message: "Registration successful",
+                data: {
+                    _id: user._id,
+                    email: user.email,
+                    role: user.role,
+                    token: generateToken(user._id, user.role),
+                }
             });
         } else {
-            res.status(400).json({ message: 'Invalid user data' });
+            res.status(400).json({ success: false, message: 'Invalid user data' });
         }
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        res.status(500).json({ success: false, message: error.message });
     }
 };

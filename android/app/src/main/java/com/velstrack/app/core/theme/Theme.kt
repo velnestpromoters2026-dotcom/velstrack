@@ -35,6 +35,7 @@ fun VelstrackTheme(content: @Composable () -> Unit) {
 
     MaterialTheme(
         colorScheme = DarkColorScheme,
+        typography = InterLikeTypography,
         content = content
     )
 }

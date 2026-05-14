@@ -33,18 +33,32 @@ class AuthViewModel @Inject constructor(
                 val response = apiService.login(request)
                 
                 if (response.isSuccessful) {
-                    val body = response.body()
-                    if (body != null) {
+                    val apiResponse = response.body()
+                    if (apiResponse != null && apiResponse.success && apiResponse.data != null) {
+                        val body = apiResponse.data
                         sessionManager.saveSession(body.token, body.role)
                         _loginState.value = LoginState.Success(body.role)
                     } else {
-                        _loginState.value = LoginState.Error("Empty response body")
+                        _loginState.value = LoginState.Error(apiResponse?.message ?: "Login failed")
                     }
                 } else {
                     _loginState.value = LoginState.Error("Invalid email or password")
                 }
             } catch (e: Exception) {
                 _loginState.value = LoginState.Error("Network Error: Could not connect to server")
+            }
+        }
+    }
+
+    fun logout() {
+        viewModelScope.launch {
+            try {
+                apiService.logout()
+            } catch (e: Exception) {
+                // Ignore network error on logout
+            } finally {
+                sessionManager.clearSession()
+                _loginState.value = LoginState.Idle
             }
         }
     }

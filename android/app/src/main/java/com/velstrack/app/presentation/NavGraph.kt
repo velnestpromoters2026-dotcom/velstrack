@@ -8,6 +8,9 @@ import com.velstrack.app.presentation.auth.LoginScreen
 import com.velstrack.app.presentation.splash.SplashScreen
 import com.velstrack.app.presentation.employee.EmployeeDashboardScreen
 import com.velstrack.app.presentation.admin.AdminDashboardScreen
+import com.velstrack.app.presentation.admin.employee.EmployeeListScreen
+import com.velstrack.app.presentation.admin.employee.AddEmployeeScreen
+import com.velstrack.app.presentation.admin.meta.MetaDashboardScreen
 
 @Composable
 fun RootNavGraph() {
@@ -38,11 +41,49 @@ fun RootNavGraph() {
         }
         
         composable("employee_dashboard") {
-            EmployeeDashboardScreen()
+            EmployeeDashboardScreen(
+                onLogout = {
+                    navController.navigate("login") {
+                        popUpTo(0) { inclusive = true }
+                    }
+                }
+            )
         }
 
         composable("admin_dashboard") {
-            AdminDashboardScreen()
+            AdminDashboardScreen(
+                onLogout = {
+                    navController.navigate("login") {
+                        popUpTo(0) { inclusive = true }
+                    }
+                },
+                onManageEmployees = {
+                    navController.navigate("employee_list")
+                },
+                onMetaAnalytics = {
+                    navController.navigate("meta_dashboard")
+                }
+            )
+        }
+
+        composable("meta_dashboard") {
+            MetaDashboardScreen(
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        composable("employee_list") {
+            EmployeeListScreen(
+                onBack = { navController.popBackStack() },
+                onAddEmployee = { navController.navigate("add_employee") },
+                onEmployeeClick = { id -> /* TODO: Detail screen */ }
+            )
+        }
+
+        composable("add_employee") {
+            AddEmployeeScreen(
+                onBack = { navController.popBackStack() }
+            )
         }
     }
 }
