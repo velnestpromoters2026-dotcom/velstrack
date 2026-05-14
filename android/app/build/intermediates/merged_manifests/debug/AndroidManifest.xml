@@ -32,7 +32,6 @@
         android:fullBackupContent="@xml/backup_rules"
         android:label="Velstrack"
         android:supportsRtl="true"
-        android:testOnly="true"
         android:theme="@style/Theme.Velstrack" >
         <activity
             android:name="com.velstrack.app.MainActivity"
