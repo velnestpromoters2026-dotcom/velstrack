@@ -76,8 +76,8 @@ fun EmployeeDashboardScreen(
         } else {
             viewModel.startCallSyncWorker()
             coroutineScope.launch {
-                delay(1500) // Wait for worker
-                viewModel.loadDashboard()
+                // Instantly sync the CallLog and update UI instead of waiting for worker
+                viewModel.syncCallsNowAndLoad()
             }
         }
     }
@@ -91,8 +91,8 @@ fun EmployeeDashboardScreen(
                 if (hasPermission) {
                     currentViewModel.startCallSyncWorker()
                     coroutineScope.launch {
-                        delay(2000) // Wait for Android CallLog to update and worker to sync
-                        currentViewModel.loadDashboard()
+                        delay(1000) // Give Android 1 second to log the call
+                        currentViewModel.syncCallsNowAndLoad()
                     }
                 }
             }
@@ -117,10 +117,8 @@ fun EmployeeDashboardScreen(
                 actions = {
                     if (hasPermission) {
                         IconButton(onClick = {
-                            viewModel.startCallSyncWorker()
                             coroutineScope.launch {
-                                delay(1500)
-                                viewModel.loadDashboard()
+                                viewModel.syncCallsNowAndLoad()
                             }
                         }) {
                             Icon(imageVector = Icons.Default.Refresh, contentDescription = "Refresh", tint = NeonCyan)
