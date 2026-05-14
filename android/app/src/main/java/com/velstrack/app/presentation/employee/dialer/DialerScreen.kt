@@ -21,7 +21,6 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Call
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.ContentPaste
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -159,8 +158,6 @@ fun DialerScreen(
                         }
                     }
                 }) {
-                    Icon(Icons.Default.ContentPaste, contentDescription = "Paste", modifier = Modifier.size(20.dp), tint = NeonCyan)
-                    Spacer(modifier = Modifier.width(8.dp))
                     Text("Paste", color = NeonCyan)
                 }
                 

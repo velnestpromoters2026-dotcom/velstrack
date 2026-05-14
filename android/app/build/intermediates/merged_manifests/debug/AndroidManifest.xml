@@ -48,13 +48,11 @@
             </intent-filter>
         </activity>
 
+        <!-- Disable default WorkManager initializer so Hilt can configure it -->
         <provider
             android:name="androidx.startup.InitializationProvider"
             android:authorities="com.velstrack.app.androidx-startup"
             android:exported="false" >
-            <meta-data
-                android:name="androidx.work.WorkManagerInitializer"
-                android:value="androidx.startup" />
             <meta-data
                 android:name="androidx.emoji2.text.EmojiCompatInitializer"
                 android:value="androidx.startup" />
