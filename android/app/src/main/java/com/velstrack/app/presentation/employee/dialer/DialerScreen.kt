@@ -1,9 +1,13 @@
 package com.velstrack.app.presentation.employee.dialer
 
 import android.Manifest
+import android.app.Activity
+import android.content.ClipboardManager
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
+import android.provider.ContactsContract
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -16,6 +20,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Call
 import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.ContentPaste
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -47,6 +53,22 @@ fun DialerScreen(
             val intent = Intent(Intent.ACTION_CALL, Uri.parse("tel:$phoneNumber"))
             context.startActivity(intent)
             onCallEnded()
+        }
+    }
+
+    val contactPickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            val contactUri = result.data?.data ?: return@rememberLauncherForActivityResult
+            val projection = arrayOf(ContactsContract.CommonDataKinds.Phone.NUMBER)
+            context.contentResolver.query(contactUri, projection, null, null, null)?.use { cursor ->
+                if (cursor.moveToFirst()) {
+                    val numberIndex = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER)
+                    val rawNumber = cursor.getString(numberIndex)
+                    phoneNumber = rawNumber.replace(Regex("[^0-9+*#]"), "")
+                }
+            }
         }
     }
 
@@ -123,7 +145,38 @@ fun DialerScreen(
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // Action Buttons
+            // Action Buttons Layer 1 (Paste & Contacts)
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                TextButton(onClick = {
+                    val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                    if (clipboard.hasPrimaryClip()) {
+                        val text = clipboard.primaryClip?.getItemAt(0)?.text?.toString()
+                        if (!text.isNullOrEmpty()) {
+                            phoneNumber = text.replace(Regex("[^0-9+*#]"), "")
+                        }
+                    }
+                }) {
+                    Icon(Icons.Default.ContentPaste, contentDescription = "Paste", modifier = Modifier.size(20.dp), tint = NeonCyan)
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Paste", color = NeonCyan)
+                }
+                
+                TextButton(onClick = {
+                    val intent = Intent(Intent.ACTION_PICK, ContactsContract.CommonDataKinds.Phone.CONTENT_URI)
+                    contactPickerLauncher.launch(intent)
+                }) {
+                    Icon(Icons.Default.Person, contentDescription = "Contacts", modifier = Modifier.size(20.dp), tint = NeonCyan)
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Contacts", color = NeonCyan)
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Action Buttons Layer 2 (Call & Backspace)
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceEvenly,
