@@ -10,6 +10,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Call
 import androidx.compose.material.icons.filled.ExitToApp
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -18,6 +19,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -36,6 +38,8 @@ import com.velstrack.app.core.theme.RoseDanger
 import com.velstrack.app.core.util.UiState
 import com.velstrack.app.presentation.auth.AuthViewModel
 import com.velstrack.app.presentation.components.*
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -64,12 +68,17 @@ fun EmployeeDashboardScreen(
         }
     }
 
+    val coroutineScope = rememberCoroutineScope()
+
     LaunchedEffect(Unit) {
         if (!hasPermission) {
             permissionLauncher.launch(Manifest.permission.READ_CALL_LOG)
         } else {
             viewModel.startCallSyncWorker()
-            viewModel.loadDashboard()
+            coroutineScope.launch {
+                delay(1500) // Wait for worker
+                viewModel.loadDashboard()
+            }
         }
     }
 
@@ -81,7 +90,10 @@ fun EmployeeDashboardScreen(
             if (event == Lifecycle.Event.ON_RESUME) {
                 if (hasPermission) {
                     currentViewModel.startCallSyncWorker()
-                    currentViewModel.loadDashboard()
+                    coroutineScope.launch {
+                        delay(2000) // Wait for Android CallLog to update and worker to sync
+                        currentViewModel.loadDashboard()
+                    }
                 }
             }
         }
@@ -103,6 +115,17 @@ fun EmployeeDashboardScreen(
                     actionIconContentColor = RoseDanger
                 ),
                 actions = {
+                    if (hasPermission) {
+                        IconButton(onClick = {
+                            viewModel.startCallSyncWorker()
+                            coroutineScope.launch {
+                                delay(1500)
+                                viewModel.loadDashboard()
+                            }
+                        }) {
+                            Icon(imageVector = Icons.Default.Refresh, contentDescription = "Refresh", tint = NeonCyan)
+                        }
+                    }
                     IconButton(onClick = {
                         authViewModel.logout()
                         onLogout()
