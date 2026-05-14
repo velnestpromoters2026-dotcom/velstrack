@@ -17,12 +17,20 @@ suspend fun <T> safeApiCall(apiCall: suspend () -> Response<ApiResponse<T>>): Re
                     Result.failure(Exception(body?.message ?: "Unknown API Error"))
                 }
             } else {
-                val errorMsg = when (response.code()) {
-                    401 -> "Unauthorized Access"
-                    403 -> "Forbidden"
-                    404 -> "Resource Not Found"
-                    500 -> "Internal Server Error"
-                    else -> "HTTP Error: ${response.code()}"
+                var errorMsg = "HTTP Error: ${response.code()}"
+                try {
+                    val errorBodyString = response.errorBody()?.string()
+                    if (errorBodyString != null && errorBodyString.contains("message")) {
+                        val startIndex = errorBodyString.indexOf("\"message\":\"") + 11
+                        val endIndex = errorBodyString.indexOf("\"", startIndex)
+                        if (startIndex > 10 && endIndex > startIndex) {
+                            errorMsg = errorBodyString.substring(startIndex, endIndex)
+                        }
+                    } else if (response.code() == 500) {
+                        errorMsg = "Internal Server Error"
+                    }
+                } catch (e: Exception) {
+                    if (response.code() == 500) errorMsg = "Internal Server Error"
                 }
                 Result.failure(Exception(errorMsg))
             }
