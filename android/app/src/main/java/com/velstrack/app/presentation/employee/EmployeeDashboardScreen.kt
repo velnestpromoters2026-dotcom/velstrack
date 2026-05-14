@@ -22,12 +22,6 @@ fun EmployeeDashboardScreen() {
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier.padding(24.dp)
         ) {
-            Icon(
-                imageVector = androidx.compose.material.icons.Icons.Default.CheckCircle,
-                contentDescription = "Success",
-                tint = NeonCyan,
-                modifier = Modifier.size(72.dp)
-            )
             Spacer(modifier = Modifier.height(24.dp))
             Text(
                 text = "Welcome to the Employee Dashboard!",

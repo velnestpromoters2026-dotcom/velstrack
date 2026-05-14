@@ -7,6 +7,7 @@ import androidx.navigation.compose.rememberNavController
 import com.velstrack.app.presentation.auth.LoginScreen
 import com.velstrack.app.presentation.splash.SplashScreen
 import com.velstrack.app.presentation.employee.EmployeeDashboardScreen
+import com.velstrack.app.presentation.admin.AdminDashboardScreen
 
 @Composable
 fun RootNavGraph() {
@@ -29,8 +30,7 @@ fun RootNavGraph() {
                         popUpTo("login") { inclusive = true }
                     }
                 } else {
-                    // Admin dashboard placeholder
-                    navController.navigate("employee_dashboard") {
+                    navController.navigate("admin_dashboard") {
                         popUpTo("login") { inclusive = true }
                     }
                 }
@@ -39,6 +39,10 @@ fun RootNavGraph() {
         
         composable("employee_dashboard") {
             EmployeeDashboardScreen()
+        }
+
+        composable("admin_dashboard") {
+            AdminDashboardScreen()
         }
     }
 }
