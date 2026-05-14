@@ -19,7 +19,11 @@ class AddEmployeeViewModel @Inject constructor(
     val addState: StateFlow<AddEmployeeState> = _addState
 
     fun addEmployee(name: String, email: String, phone: String, pass: String, role: String) {
-        if (name.isBlank() || email.isBlank() || pass.isBlank()) {
+        val trimmedName = name.trim()
+        val trimmedEmail = email.trim()
+        val trimmedPhone = phone.trim()
+        
+        if (trimmedName.isBlank() || trimmedEmail.isBlank() || pass.isBlank()) {
             _addState.value = AddEmployeeState.Error("Please fill all required fields")
             return
         }
@@ -27,9 +31,9 @@ class AddEmployeeViewModel @Inject constructor(
         _addState.value = AddEmployeeState.Loading
         viewModelScope.launch {
             val request = AddEmployeeRequest(
-                name = name,
-                email = email,
-                phone = phone,
+                name = trimmedName,
+                email = trimmedEmail,
+                phone = trimmedPhone,
                 password = pass,
                 role = role,
                 department = "Sales"

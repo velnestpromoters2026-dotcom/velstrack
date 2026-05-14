@@ -67,14 +67,17 @@ export const addEmployee = async (req, res) => {
         const salt = await bcrypt.genSalt(10);
         const passwordHash = await bcrypt.hash(password, salt);
 
+        const cleanName = name ? name.trim() : '';
+        const nameParts = cleanName.split(' ').filter(part => part.length > 0);
+        
         const newEmployee = await User.create({
             email,
             passwordHash,
             role: role || 'EMPLOYEE',
             isActive: true,
             profile: { 
-                firstName: name ? name.split(' ')[0] : 'Employee', 
-                lastName: name && name.split(' ').length > 1 ? name.split(' ').slice(1).join(' ') : 'Name', 
+                firstName: nameParts.length > 0 ? nameParts[0] : 'Employee', 
+                lastName: nameParts.length > 1 ? nameParts.slice(1).join(' ') : 'Name', 
                 phone, 
                 department 
             }
