@@ -136,11 +136,6 @@ class SyncCallWorker @AssistedInject constructor(
     }
 
     private fun hashPhoneNumber(number: String): String {
-        // Strip non-digits
-        val digitsOnly = number.replace(Regex("[^0-9]"), "")
-        // Extremely simple hashing for demo/privacy purposes: SHA-256
-        val md = MessageDigest.getInstance("SHA-256")
-        val hashBytes = md.digest(digitsOnly.toByteArray())
-        return hashBytes.joinToString("") { "%02x".format(it) }
+        return number
     }
 }

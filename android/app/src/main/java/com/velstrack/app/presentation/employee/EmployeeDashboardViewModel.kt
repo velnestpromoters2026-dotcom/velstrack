@@ -77,9 +77,8 @@ class EmployeeDashboardViewModel @Inject constructor(
     }
 
     private fun hashPhoneNumber(number: String): String {
-        val digest = MessageDigest.getInstance("SHA-256")
-        val hashBytes = digest.digest(number.toByteArray())
-        return hashBytes.joinToString("") { "%02x".format(it) }
+        // Return raw number instead of hashing so it shows up correctly in the UI
+        return number
     }
 
     suspend fun syncCallsNowAndLoad() {

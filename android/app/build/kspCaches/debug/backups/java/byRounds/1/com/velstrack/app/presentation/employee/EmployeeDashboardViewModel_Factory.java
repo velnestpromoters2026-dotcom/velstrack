@@ -1,6 +1,9 @@
 package com.velstrack.app.presentation.employee;
 
+import android.content.Context;
 import androidx.work.WorkManager;
+import com.velstrack.app.data.local.dao.CallDao;
+import com.velstrack.app.data.remote.api.ApiService;
 import com.velstrack.app.domain.repository.EmployeeRepository;
 import dagger.internal.DaggerGenerated;
 import dagger.internal.Factory;
@@ -10,7 +13,7 @@ import javax.annotation.processing.Generated;
 import javax.inject.Provider;
 
 @ScopeMetadata
-@QualifierMetadata
+@QualifierMetadata("dagger.hilt.android.qualifiers.ApplicationContext")
 @DaggerGenerated
 @Generated(
     value = "dagger.internal.codegen.ComponentProcessor",
@@ -27,24 +30,36 @@ public final class EmployeeDashboardViewModel_Factory implements Factory<Employe
 
   private final Provider<WorkManager> workManagerProvider;
 
+  private final Provider<CallDao> callDaoProvider;
+
+  private final Provider<ApiService> apiServiceProvider;
+
+  private final Provider<Context> contextProvider;
+
   public EmployeeDashboardViewModel_Factory(Provider<EmployeeRepository> repositoryProvider,
-      Provider<WorkManager> workManagerProvider) {
+      Provider<WorkManager> workManagerProvider, Provider<CallDao> callDaoProvider,
+      Provider<ApiService> apiServiceProvider, Provider<Context> contextProvider) {
     this.repositoryProvider = repositoryProvider;
     this.workManagerProvider = workManagerProvider;
+    this.callDaoProvider = callDaoProvider;
+    this.apiServiceProvider = apiServiceProvider;
+    this.contextProvider = contextProvider;
   }
 
   @Override
   public EmployeeDashboardViewModel get() {
-    return newInstance(repositoryProvider.get(), workManagerProvider.get());
+    return newInstance(repositoryProvider.get(), workManagerProvider.get(), callDaoProvider.get(), apiServiceProvider.get(), contextProvider.get());
   }
 
   public static EmployeeDashboardViewModel_Factory create(
-      Provider<EmployeeRepository> repositoryProvider, Provider<WorkManager> workManagerProvider) {
-    return new EmployeeDashboardViewModel_Factory(repositoryProvider, workManagerProvider);
+      Provider<EmployeeRepository> repositoryProvider, Provider<WorkManager> workManagerProvider,
+      Provider<CallDao> callDaoProvider, Provider<ApiService> apiServiceProvider,
+      Provider<Context> contextProvider) {
+    return new EmployeeDashboardViewModel_Factory(repositoryProvider, workManagerProvider, callDaoProvider, apiServiceProvider, contextProvider);
   }
 
   public static EmployeeDashboardViewModel newInstance(EmployeeRepository repository,
-      WorkManager workManager) {
-    return new EmployeeDashboardViewModel(repository, workManager);
+      WorkManager workManager, CallDao callDao, ApiService apiService, Context context) {
+    return new EmployeeDashboardViewModel(repository, workManager, callDao, apiService, context);
   }
 }
