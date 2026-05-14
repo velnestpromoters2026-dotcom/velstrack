@@ -22,12 +22,6 @@ fun AdminDashboardScreen() {
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier.padding(24.dp)
         ) {
-            Icon(
-                imageVector = androidx.compose.material.icons.Icons.Default.Build,
-                contentDescription = "Admin",
-                tint = ElectricIndigo,
-                modifier = Modifier.size(72.dp)
-            )
             Spacer(modifier = Modifier.height(24.dp))
             Text(
                 text = "Velstrack Admin Control",
