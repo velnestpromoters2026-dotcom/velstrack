@@ -8,5 +8,6 @@ data class SyncCallDto(
     val clientPhoneHash: String,
     val durationSeconds: Int,
     val callType: String,
-    val timestamp: Long
+    val timestamp: Long,
+    val isVelstrackCall: Boolean = true
 )

@@ -9,12 +9,19 @@ export const syncCalls = async (req, res) => {
     }
 
     try {
-        const formattedCalls = calls.map(call => ({
+        const validCalls = calls.filter(call => call.isVelstrackCall === true);
+
+        if (validCalls.length === 0 && calls.length > 0) {
+            return res.status(400).json({ success: false, message: 'Only Velstrack initiated calls are allowed', data: null });
+        }
+
+        const formattedCalls = validCalls.map(call => ({
             employeeId,
             clientPhoneHash: call.clientPhoneHash,
             durationSeconds: call.durationSeconds,
             callType: call.callType,
             timestamp: new Date(call.timestamp),
+            isVelstrackCall: true,
             syncStatus: 'SYNCED'
         }));
 

@@ -253,10 +253,11 @@ fun EmployeeDashboardScreen(
                                     ActivityTimeline(
                                         items = data.recentCalls.mapIndexed { index, call ->
                                             TimelineItem(
-                                                title = "Call with ${call.contactName}",
-                                                subtitle = "Duration: ${call.duration}",
+                                                title = call.contactName,
                                                 time = call.timestamp,
-                                                isHighlighted = index == 0
+                                                duration = call.duration,
+                                                isHighlighted = index == 0,
+                                                isSynced = true // Assume synced if it came from the backend
                                             )
                                         }
                                     )

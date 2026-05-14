@@ -15,12 +15,22 @@ export const getEmployeeDashboardStats = async (req, res) => {
 
         const recentLogs = await CallLog.find({ employeeId: userId }).sort({ timestamp: -1 }).limit(20);
 
-        const recentCalls = recentLogs.map(log => ({
-            _id: log._id.toString(),
-            contactName: log.clientPhoneHash,
-            duration: `${Math.floor(log.durationSeconds / 60)}m ${log.durationSeconds % 60}s`,
-            timestamp: log.timestamp || new Date()
-        }));
+        const recentCalls = recentLogs.map(log => {
+            const h = Math.floor(log.durationSeconds / 3600);
+            const m = Math.floor((log.durationSeconds % 3600) / 60);
+            const s = log.durationSeconds % 60;
+            let durationStr = '';
+            if (h > 0) durationStr += `${h}h `;
+            if (m > 0 || h > 0) durationStr += `${m}m `;
+            durationStr += `${s}s`;
+
+            return {
+                _id: log._id.toString(),
+                contactName: log.clientPhoneHash,
+                duration: durationStr.trim(),
+                timestamp: log.timestamp || new Date()
+            };
+        });
 
         res.json({
             success: true,

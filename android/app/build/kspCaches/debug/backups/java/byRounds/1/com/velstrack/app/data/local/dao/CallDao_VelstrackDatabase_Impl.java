@@ -43,7 +43,7 @@ public final class CallDao_VelstrackDatabase_Impl implements CallDao {
       @Override
       @NonNull
       protected String createQuery() {
-        return "INSERT OR REPLACE INTO `calls` (`id`,`clientPhoneHash`,`durationSeconds`,`callType`,`timestamp`,`isSynced`) VALUES (?,?,?,?,?,?)";
+        return "INSERT OR IGNORE INTO `calls` (`id`,`clientPhoneHash`,`durationSeconds`,`callType`,`timestamp`,`isSynced`) VALUES (?,?,?,?,?,?)";
       }
 
       @Override

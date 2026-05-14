@@ -6,6 +6,7 @@ const callLogSchema = new mongoose.Schema({
     durationSeconds: { type: Number, required: true },
     callType: { type: String, enum: ['OUTGOING', 'INCOMING', 'MISSED'], required: true },
     timestamp: { type: Date, required: true, index: true },
+    isVelstrackCall: { type: Boolean, required: true, default: true },
     syncStatus: { type: String, enum: ['PENDING', 'SYNCED'], default: 'SYNCED' }
 }, { timestamps: true });
 
