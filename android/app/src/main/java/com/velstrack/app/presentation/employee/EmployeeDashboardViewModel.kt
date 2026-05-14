@@ -85,62 +85,72 @@ class EmployeeDashboardViewModel @Inject constructor(
         _dashboardState.value = UiState.Loading
         withContext(Dispatchers.IO) {
             try {
-                val calendar = Calendar.getInstance()
-                calendar.set(Calendar.HOUR_OF_DAY, 0)
-                calendar.set(Calendar.MINUTE, 0)
-                calendar.set(Calendar.SECOND, 0)
-                val startOfDay = calendar.timeInMillis
+                val prefs = context.getSharedPreferences("velstrack_prefs", Context.MODE_PRIVATE)
+                val pendingNumber = prefs.getString("pending_call_number", null)
 
-                val cursor = context.contentResolver.query(
-                    CallLog.Calls.CONTENT_URI,
-                    arrayOf(CallLog.Calls.NUMBER, CallLog.Calls.DURATION, CallLog.Calls.TYPE, CallLog.Calls.DATE),
-                    "${CallLog.Calls.DATE} >= ?",
-                    arrayOf(startOfDay.toString()),
-                    "${CallLog.Calls.DATE} DESC"
-                )
+                if (pendingNumber != null) {
+                    val calendar = Calendar.getInstance()
+                    calendar.set(Calendar.HOUR_OF_DAY, 0)
+                    calendar.set(Calendar.MINUTE, 0)
+                    calendar.set(Calendar.SECOND, 0)
+                    val startOfDay = calendar.timeInMillis
 
-                val newEntities = mutableListOf<CallEntity>()
+                    val cursor = context.contentResolver.query(
+                        CallLog.Calls.CONTENT_URI,
+                        arrayOf(CallLog.Calls.NUMBER, CallLog.Calls.DURATION, CallLog.Calls.TYPE, CallLog.Calls.DATE),
+                        "${CallLog.Calls.DATE} >= ?",
+                        arrayOf(startOfDay.toString()),
+                        "${CallLog.Calls.DATE} DESC"
+                    )
 
-                cursor?.use { c ->
-                    val numberIdx = c.getColumnIndex(CallLog.Calls.NUMBER)
-                    val durationIdx = c.getColumnIndex(CallLog.Calls.DURATION)
-                    val typeIdx = c.getColumnIndex(CallLog.Calls.TYPE)
-                    val dateIdx = c.getColumnIndex(CallLog.Calls.DATE)
+                    var matchedCall: CallEntity? = null
 
-                    while (c.moveToNext()) {
-                        val number = c.getString(numberIdx) ?: continue
-                        val duration = c.getInt(durationIdx)
-                        val typeInt = c.getInt(typeIdx)
-                        val date = c.getLong(dateIdx)
+                    cursor?.use { c ->
+                        val numberIdx = c.getColumnIndex(CallLog.Calls.NUMBER)
+                        val durationIdx = c.getColumnIndex(CallLog.Calls.DURATION)
+                        val typeIdx = c.getColumnIndex(CallLog.Calls.TYPE)
+                        val dateIdx = c.getColumnIndex(CallLog.Calls.DATE)
 
-                        val typeStr = when (typeInt) {
-                            CallLog.Calls.OUTGOING_TYPE -> "OUTGOING"
-                            CallLog.Calls.INCOMING_TYPE -> "INCOMING"
-                            else -> "UNKNOWN"
+                        while (c.moveToNext()) {
+                            val number = c.getString(numberIdx) ?: continue
+                            // Check if this call matches our pending number (strip formatting)
+                            val normalizedDbNumber = number.replace(Regex("[^0-9+]"), "")
+                            val normalizedPending = pendingNumber.replace(Regex("[^0-9+]"), "")
+                            
+                            if (normalizedDbNumber == normalizedPending || normalizedDbNumber.contains(normalizedPending) || normalizedPending.contains(normalizedDbNumber)) {
+                                val duration = c.getInt(durationIdx)
+                                val typeInt = c.getInt(typeIdx)
+                                val date = c.getLong(dateIdx)
+
+                                val typeStr = when (typeInt) {
+                                    CallLog.Calls.OUTGOING_TYPE -> "OUTGOING"
+                                    else -> "UNKNOWN"
+                                }
+
+                                if (typeStr == "OUTGOING") {
+                                    val id = "${hashPhoneNumber(number)}_${date}"
+                                    matchedCall = CallEntity(
+                                        id = id,
+                                        clientPhoneHash = hashPhoneNumber(number),
+                                        durationSeconds = duration,
+                                        callType = typeStr,
+                                        timestamp = date,
+                                        isSynced = false
+                                    )
+                                    break // Found the most recent matching call!
+                                }
+                            }
                         }
+                    }
 
-                        if (typeStr == "UNKNOWN") continue
-
-                        val phoneHash = hashPhoneNumber(number)
-                        val id = "${phoneHash}_${date}"
-
-                        newEntities.add(
-                            CallEntity(
-                                id = id,
-                                clientPhoneHash = phoneHash,
-                                durationSeconds = duration,
-                                callType = typeStr,
-                                timestamp = date,
-                                isSynced = false
-                            )
-                        )
+                    if (matchedCall != null) {
+                        callDao.insertCalls(listOf(matchedCall!!))
+                        // Clear the pending number so we don't process it again
+                        prefs.edit().remove("pending_call_number").apply()
                     }
                 }
 
-                if (newEntities.isNotEmpty()) {
-                    callDao.insertCalls(newEntities)
-                }
-
+                // Now sync any unsynced calls from Room
                 val unsyncedCalls = callDao.getUnsyncedCalls()
                 if (unsyncedCalls.isNotEmpty()) {
                     val dtos = unsyncedCalls.map {

@@ -30,72 +30,10 @@ class SyncCallWorker @AssistedInject constructor(
         try {
             Log.d("SyncCallWorker", "Starting Call Sync...")
             
-            // 1. Get midnight timestamp
-            val calendar = Calendar.getInstance()
-            calendar.set(Calendar.HOUR_OF_DAY, 0)
-            calendar.set(Calendar.MINUTE, 0)
-            calendar.set(Calendar.SECOND, 0)
-            val startOfDay = calendar.timeInMillis
+            // We no longer scan the entire Android CallLog here.
+            // Calls are now exclusively tracked and inserted into Room 
+            // by the EmployeeDashboardViewModel when dialed from the app.
 
-            // 2. Query CallLog
-            val cursor = applicationContext.contentResolver.query(
-                CallLog.Calls.CONTENT_URI,
-                arrayOf(
-                    CallLog.Calls.NUMBER,
-                    CallLog.Calls.DURATION,
-                    CallLog.Calls.TYPE,
-                    CallLog.Calls.DATE
-                ),
-                "${CallLog.Calls.DATE} >= ?",
-                arrayOf(startOfDay.toString()),
-                "${CallLog.Calls.DATE} DESC"
-            )
-
-            val newEntities = mutableListOf<CallEntity>()
-
-            cursor?.use { c ->
-                val numberIdx = c.getColumnIndex(CallLog.Calls.NUMBER)
-                val durationIdx = c.getColumnIndex(CallLog.Calls.DURATION)
-                val typeIdx = c.getColumnIndex(CallLog.Calls.TYPE)
-                val dateIdx = c.getColumnIndex(CallLog.Calls.DATE)
-
-                while (c.moveToNext()) {
-                    val number = c.getString(numberIdx) ?: continue
-                    val duration = c.getInt(durationIdx)
-                    val typeInt = c.getInt(typeIdx)
-                    val date = c.getLong(dateIdx)
-
-                    val typeStr = when (typeInt) {
-                        CallLog.Calls.OUTGOING_TYPE -> "OUTGOING"
-                        CallLog.Calls.INCOMING_TYPE -> "INCOMING"
-                        CallLog.Calls.MISSED_TYPE -> "MISSED"
-                        CallLog.Calls.REJECTED_TYPE -> "REJECTED"
-                        else -> "UNKNOWN"
-                    }
-
-                    // Only track Outgoing and Incoming
-                    if (typeStr == "UNKNOWN" || typeStr == "MISSED" || typeStr == "REJECTED") continue
-
-                    val phoneHash = hashPhoneNumber(number)
-                    val id = "${phoneHash}_${date}" // Unique per call
-
-                    newEntities.add(
-                        CallEntity(
-                            id = id,
-                            clientPhoneHash = phoneHash,
-                            durationSeconds = duration,
-                            callType = typeStr,
-                            timestamp = date,
-                            isSynced = false
-                        )
-                    )
-                }
-            }
-
-            // 3. Save to Room
-            if (newEntities.isNotEmpty()) {
-                callDao.insertCalls(newEntities)
-            }
 
             // 4. Fetch Unsynced
             val unsynced = callDao.getUnsyncedCalls()

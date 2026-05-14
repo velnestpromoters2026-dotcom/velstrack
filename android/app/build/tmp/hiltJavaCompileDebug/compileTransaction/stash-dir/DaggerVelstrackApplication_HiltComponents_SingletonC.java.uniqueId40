@@ -535,7 +535,7 @@ public final class DaggerVelstrackApplication_HiltComponents_SingletonC {
           return (T) new AuthViewModel(singletonCImpl.provideApiServiceProvider.get(), singletonCImpl.sessionManagerProvider.get());
 
           case 3: // com.velstrack.app.presentation.employee.EmployeeDashboardViewModel 
-          return (T) new EmployeeDashboardViewModel(viewModelCImpl.employeeRepository(), singletonCImpl.provideWorkManagerProvider.get());
+          return (T) new EmployeeDashboardViewModel(viewModelCImpl.employeeRepository(), singletonCImpl.provideWorkManagerProvider.get(), singletonCImpl.provideCallDaoProvider.get(), singletonCImpl.provideApiServiceProvider.get(), ApplicationContextModule_ProvideContextFactory.provideContext(singletonCImpl.applicationContextModule));
 
           default: throw new AssertionError(id);
         }
