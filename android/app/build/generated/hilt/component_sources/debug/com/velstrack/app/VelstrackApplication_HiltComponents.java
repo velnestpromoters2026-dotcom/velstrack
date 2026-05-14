@@ -1,7 +1,10 @@
 package com.velstrack.app;
 
 import androidx.hilt.work.HiltWrapper_WorkerFactoryModule;
+import com.velstrack.app.di.DatabaseModule;
 import com.velstrack.app.di.NetworkModule;
+import com.velstrack.app.di.WorkManagerModule;
+import com.velstrack.app.domain.usecase.SyncCallWorker_HiltModule;
 import com.velstrack.app.presentation.admin.AdminViewModel_HiltModules;
 import com.velstrack.app.presentation.admin.employee.AddEmployeeViewModel_HiltModules;
 import com.velstrack.app.presentation.auth.AuthViewModel_HiltModules;
@@ -130,11 +133,14 @@ public final class VelstrackApplication_HiltComponents {
   @Component(
       modules = {
           ApplicationContextModule.class,
+          DatabaseModule.class,
           HiltWrapper_FragmentGetContextFix_FragmentGetContextFixModule.class,
           HiltWrapper_WorkerFactoryModule.class,
           NetworkModule.class,
+          SyncCallWorker_HiltModule.class,
           ActivityRetainedCBuilderModule.class,
-          ServiceCBuilderModule.class
+          ServiceCBuilderModule.class,
+          WorkManagerModule.class
       }
   )
   @Singleton

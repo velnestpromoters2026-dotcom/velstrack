@@ -20,7 +20,10 @@ import dagger.hilt.processor.internal.definecomponent.codegen._dagger_hilt_compo
 import hilt_aggregated_deps._androidx_hilt_work_HiltWrapper_WorkerFactoryModule;
 import hilt_aggregated_deps._com_velstrack_app_MainActivity_GeneratedInjector;
 import hilt_aggregated_deps._com_velstrack_app_VelstrackApplication_GeneratedInjector;
+import hilt_aggregated_deps._com_velstrack_app_di_DatabaseModule;
 import hilt_aggregated_deps._com_velstrack_app_di_NetworkModule;
+import hilt_aggregated_deps._com_velstrack_app_di_WorkManagerModule;
+import hilt_aggregated_deps._com_velstrack_app_domain_usecase_SyncCallWorker_HiltModule;
 import hilt_aggregated_deps._com_velstrack_app_presentation_admin_AdminViewModel_HiltModules_BindsModule;
 import hilt_aggregated_deps._com_velstrack_app_presentation_admin_AdminViewModel_HiltModules_KeyModule;
 import hilt_aggregated_deps._com_velstrack_app_presentation_admin_employee_AddEmployeeViewModel_HiltModules_BindsModule;
@@ -71,7 +74,10 @@ import hilt_aggregated_deps._dagger_hilt_android_internal_modules_HiltWrapper_Ac
         _androidx_hilt_work_HiltWrapper_WorkerFactoryModule.class,
         _com_velstrack_app_MainActivity_GeneratedInjector.class,
         _com_velstrack_app_VelstrackApplication_GeneratedInjector.class,
+        _com_velstrack_app_di_DatabaseModule.class,
         _com_velstrack_app_di_NetworkModule.class,
+        _com_velstrack_app_di_WorkManagerModule.class,
+        _com_velstrack_app_domain_usecase_SyncCallWorker_HiltModule.class,
         _com_velstrack_app_presentation_admin_AdminViewModel_HiltModules_BindsModule.class,
         _com_velstrack_app_presentation_admin_AdminViewModel_HiltModules_KeyModule.class,
         _com_velstrack_app_presentation_admin_employee_AddEmployeeViewModel_HiltModules_BindsModule.class,

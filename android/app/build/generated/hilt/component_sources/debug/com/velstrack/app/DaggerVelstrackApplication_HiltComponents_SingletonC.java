@@ -2,20 +2,36 @@ package com.velstrack.app;
 
 import android.app.Activity;
 import android.app.Service;
+import android.content.Context;
 import android.view.View;
 import androidx.fragment.app.Fragment;
+import androidx.hilt.work.HiltWorkerFactory;
 import androidx.hilt.work.HiltWrapper_WorkerFactoryModule;
+import androidx.hilt.work.WorkerAssistedFactory;
+import androidx.hilt.work.WorkerFactoryModule_ProvideFactoryFactory;
 import androidx.lifecycle.SavedStateHandle;
 import androidx.lifecycle.ViewModel;
+import androidx.work.ListenableWorker;
+import androidx.work.WorkManager;
+import androidx.work.WorkerParameters;
 import com.velstrack.app.core.datastore.SessionManager;
+import com.velstrack.app.data.local.AppDatabase;
+import com.velstrack.app.data.local.dao.CallDao;
 import com.velstrack.app.data.remote.api.ApiService;
+import com.velstrack.app.di.DatabaseModule;
+import com.velstrack.app.di.DatabaseModule_ProvideAppDatabaseFactory;
+import com.velstrack.app.di.DatabaseModule_ProvideCallDaoFactory;
 import com.velstrack.app.di.NetworkModule;
 import com.velstrack.app.di.NetworkModule_ProvideApiServiceFactory;
 import com.velstrack.app.di.NetworkModule_ProvideAuthInterceptorFactory;
 import com.velstrack.app.di.NetworkModule_ProvideOkHttpClientFactory;
 import com.velstrack.app.di.NetworkModule_ProvideRetrofitFactory;
+import com.velstrack.app.di.WorkManagerModule;
+import com.velstrack.app.di.WorkManagerModule_ProvideWorkManagerFactory;
 import com.velstrack.app.domain.repository.AdminRepository;
 import com.velstrack.app.domain.repository.EmployeeRepository;
+import com.velstrack.app.domain.usecase.SyncCallWorker;
+import com.velstrack.app.domain.usecase.SyncCallWorker_AssistedFactory;
 import com.velstrack.app.presentation.admin.AdminViewModel;
 import com.velstrack.app.presentation.admin.AdminViewModel_HiltModules_KeyModule_ProvideFactory;
 import com.velstrack.app.presentation.admin.employee.AddEmployeeViewModel;
@@ -44,6 +60,7 @@ import dagger.internal.DoubleCheck;
 import dagger.internal.MapBuilder;
 import dagger.internal.Preconditions;
 import dagger.internal.SetBuilder;
+import dagger.internal.SingleCheck;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
@@ -87,6 +104,15 @@ public final class DaggerVelstrackApplication_HiltComponents_SingletonC {
      * @deprecated This module is declared, but an instance is not used in the component. This method is a no-op. For more, see https://dagger.dev/unused-modules.
      */
     @Deprecated
+    public Builder databaseModule(DatabaseModule databaseModule) {
+      Preconditions.checkNotNull(databaseModule);
+      return this;
+    }
+
+    /**
+     * @deprecated This module is declared, but an instance is not used in the component. This method is a no-op. For more, see https://dagger.dev/unused-modules.
+     */
+    @Deprecated
     public Builder hiltWrapper_FragmentGetContextFix_FragmentGetContextFixModule(
         HiltWrapper_FragmentGetContextFix_FragmentGetContextFixModule hiltWrapper_FragmentGetContextFix_FragmentGetContextFixModule) {
       Preconditions.checkNotNull(hiltWrapper_FragmentGetContextFix_FragmentGetContextFixModule);
@@ -109,6 +135,15 @@ public final class DaggerVelstrackApplication_HiltComponents_SingletonC {
     @Deprecated
     public Builder networkModule(NetworkModule networkModule) {
       Preconditions.checkNotNull(networkModule);
+      return this;
+    }
+
+    /**
+     * @deprecated This module is declared, but an instance is not used in the component. This method is a no-op. For more, see https://dagger.dev/unused-modules.
+     */
+    @Deprecated
+    public Builder workManagerModule(WorkManagerModule workManagerModule) {
+      Preconditions.checkNotNull(workManagerModule);
       return this;
     }
 
@@ -500,7 +535,7 @@ public final class DaggerVelstrackApplication_HiltComponents_SingletonC {
           return (T) new AuthViewModel(singletonCImpl.provideApiServiceProvider.get(), singletonCImpl.sessionManagerProvider.get());
 
           case 3: // com.velstrack.app.presentation.employee.EmployeeDashboardViewModel 
-          return (T) new EmployeeDashboardViewModel(viewModelCImpl.employeeRepository());
+          return (T) new EmployeeDashboardViewModel(viewModelCImpl.employeeRepository(), singletonCImpl.provideWorkManagerProvider.get());
 
           default: throw new AssertionError(id);
         }
@@ -581,6 +616,10 @@ public final class DaggerVelstrackApplication_HiltComponents_SingletonC {
 
     private final SingletonCImpl singletonCImpl = this;
 
+    private Provider<AppDatabase> provideAppDatabaseProvider;
+
+    private Provider<CallDao> provideCallDaoProvider;
+
     private Provider<SessionManager> sessionManagerProvider;
 
     private Provider<Interceptor> provideAuthInterceptorProvider;
@@ -591,23 +630,41 @@ public final class DaggerVelstrackApplication_HiltComponents_SingletonC {
 
     private Provider<ApiService> provideApiServiceProvider;
 
+    private Provider<SyncCallWorker_AssistedFactory> syncCallWorker_AssistedFactoryProvider;
+
+    private Provider<WorkManager> provideWorkManagerProvider;
+
     private SingletonCImpl(ApplicationContextModule applicationContextModuleParam) {
       this.applicationContextModule = applicationContextModuleParam;
       initialize(applicationContextModuleParam);
 
     }
 
+    private Map<String, Provider<WorkerAssistedFactory<? extends ListenableWorker>>> mapOfStringAndProviderOfWorkerAssistedFactoryOf(
+        ) {
+      return Collections.<String, Provider<WorkerAssistedFactory<? extends ListenableWorker>>>singletonMap("com.velstrack.app.domain.usecase.SyncCallWorker", ((Provider) syncCallWorker_AssistedFactoryProvider));
+    }
+
+    private HiltWorkerFactory hiltWorkerFactory() {
+      return WorkerFactoryModule_ProvideFactoryFactory.provideFactory(mapOfStringAndProviderOfWorkerAssistedFactoryOf());
+    }
+
     @SuppressWarnings("unchecked")
     private void initialize(final ApplicationContextModule applicationContextModuleParam) {
-      this.sessionManagerProvider = DoubleCheck.provider(new SwitchingProvider<SessionManager>(singletonCImpl, 4));
-      this.provideAuthInterceptorProvider = DoubleCheck.provider(new SwitchingProvider<Interceptor>(singletonCImpl, 3));
-      this.provideOkHttpClientProvider = DoubleCheck.provider(new SwitchingProvider<OkHttpClient>(singletonCImpl, 2));
-      this.provideRetrofitProvider = DoubleCheck.provider(new SwitchingProvider<Retrofit>(singletonCImpl, 1));
-      this.provideApiServiceProvider = DoubleCheck.provider(new SwitchingProvider<ApiService>(singletonCImpl, 0));
+      this.provideAppDatabaseProvider = DoubleCheck.provider(new SwitchingProvider<AppDatabase>(singletonCImpl, 2));
+      this.provideCallDaoProvider = DoubleCheck.provider(new SwitchingProvider<CallDao>(singletonCImpl, 1));
+      this.sessionManagerProvider = DoubleCheck.provider(new SwitchingProvider<SessionManager>(singletonCImpl, 7));
+      this.provideAuthInterceptorProvider = DoubleCheck.provider(new SwitchingProvider<Interceptor>(singletonCImpl, 6));
+      this.provideOkHttpClientProvider = DoubleCheck.provider(new SwitchingProvider<OkHttpClient>(singletonCImpl, 5));
+      this.provideRetrofitProvider = DoubleCheck.provider(new SwitchingProvider<Retrofit>(singletonCImpl, 4));
+      this.provideApiServiceProvider = DoubleCheck.provider(new SwitchingProvider<ApiService>(singletonCImpl, 3));
+      this.syncCallWorker_AssistedFactoryProvider = SingleCheck.provider(new SwitchingProvider<SyncCallWorker_AssistedFactory>(singletonCImpl, 0));
+      this.provideWorkManagerProvider = DoubleCheck.provider(new SwitchingProvider<WorkManager>(singletonCImpl, 8));
     }
 
     @Override
     public void injectVelstrackApplication(VelstrackApplication velstrackApplication) {
+      injectVelstrackApplication2(velstrackApplication);
     }
 
     @Override
@@ -625,6 +682,11 @@ public final class DaggerVelstrackApplication_HiltComponents_SingletonC {
       return new ServiceCBuilder(singletonCImpl);
     }
 
+    private VelstrackApplication injectVelstrackApplication2(VelstrackApplication instance) {
+      VelstrackApplication_MembersInjector.injectWorkerFactory(instance, hiltWorkerFactory());
+      return instance;
+    }
+
     private static final class SwitchingProvider<T> implements Provider<T> {
       private final SingletonCImpl singletonCImpl;
 
@@ -639,20 +701,37 @@ public final class DaggerVelstrackApplication_HiltComponents_SingletonC {
       @Override
       public T get() {
         switch (id) {
-          case 0: // com.velstrack.app.data.remote.api.ApiService 
+          case 0: // com.velstrack.app.domain.usecase.SyncCallWorker_AssistedFactory 
+          return (T) new SyncCallWorker_AssistedFactory() {
+            @Override
+            public SyncCallWorker create(Context appContext, WorkerParameters workerParams) {
+              return new SyncCallWorker(appContext, workerParams, singletonCImpl.provideCallDaoProvider.get(), singletonCImpl.provideApiServiceProvider.get());
+            }
+          };
+
+          case 1: // com.velstrack.app.data.local.dao.CallDao 
+          return (T) DatabaseModule_ProvideCallDaoFactory.provideCallDao(singletonCImpl.provideAppDatabaseProvider.get());
+
+          case 2: // com.velstrack.app.data.local.AppDatabase 
+          return (T) DatabaseModule_ProvideAppDatabaseFactory.provideAppDatabase(ApplicationContextModule_ProvideContextFactory.provideContext(singletonCImpl.applicationContextModule));
+
+          case 3: // com.velstrack.app.data.remote.api.ApiService 
           return (T) NetworkModule_ProvideApiServiceFactory.provideApiService(singletonCImpl.provideRetrofitProvider.get());
 
-          case 1: // retrofit2.Retrofit 
+          case 4: // retrofit2.Retrofit 
           return (T) NetworkModule_ProvideRetrofitFactory.provideRetrofit(singletonCImpl.provideOkHttpClientProvider.get());
 
-          case 2: // okhttp3.OkHttpClient 
+          case 5: // okhttp3.OkHttpClient 
           return (T) NetworkModule_ProvideOkHttpClientFactory.provideOkHttpClient(singletonCImpl.provideAuthInterceptorProvider.get());
 
-          case 3: // okhttp3.Interceptor 
+          case 6: // okhttp3.Interceptor 
           return (T) NetworkModule_ProvideAuthInterceptorFactory.provideAuthInterceptor(singletonCImpl.sessionManagerProvider.get());
 
-          case 4: // com.velstrack.app.core.datastore.SessionManager 
+          case 7: // com.velstrack.app.core.datastore.SessionManager 
           return (T) new SessionManager(ApplicationContextModule_ProvideContextFactory.provideContext(singletonCImpl.applicationContextModule));
+
+          case 8: // androidx.work.WorkManager 
+          return (T) WorkManagerModule_ProvideWorkManagerFactory.provideWorkManager(ApplicationContextModule_ProvideContextFactory.provideContext(singletonCImpl.applicationContextModule));
 
           default: throw new AssertionError(id);
         }

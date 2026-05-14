@@ -7,6 +7,7 @@ import androidx.navigation.compose.rememberNavController
 import com.velstrack.app.presentation.auth.LoginScreen
 import com.velstrack.app.presentation.splash.SplashScreen
 import com.velstrack.app.presentation.employee.EmployeeDashboardScreen
+import com.velstrack.app.presentation.employee.dialer.DialerScreen
 import com.velstrack.app.presentation.admin.AdminDashboardScreen
 import com.velstrack.app.presentation.admin.employee.EmployeeListScreen
 import com.velstrack.app.presentation.admin.employee.AddEmployeeScreen
@@ -46,6 +47,19 @@ fun RootNavGraph() {
                     navController.navigate("login") {
                         popUpTo(0) { inclusive = true }
                     }
+                },
+                onNavigateToDialer = {
+                    navController.navigate("dialer")
+                }
+            )
+        }
+
+        composable("dialer") {
+            DialerScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onCallEnded = {
+                    // Navigate back to dashboard automatically if preferred, or stay on dialer
+                    navController.popBackStack()
                 }
             )
         }

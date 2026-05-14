@@ -51,5 +51,13 @@ class EmployeeDashboardViewModel @Inject constructor(
             ExistingPeriodicWorkPolicy.KEEP,
             syncRequest
         )
+
+        // Run immediately once
+        val immediateRequest = androidx.work.OneTimeWorkRequestBuilder<SyncCallWorker>().build()
+        workManager.enqueueUniqueWork(
+            "CallSyncWorker_Immediate",
+            androidx.work.ExistingWorkPolicy.REPLACE,
+            immediateRequest
+        )
     }
 }

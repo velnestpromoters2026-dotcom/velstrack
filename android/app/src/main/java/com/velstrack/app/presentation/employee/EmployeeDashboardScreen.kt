@@ -12,19 +12,24 @@ import androidx.compose.material.icons.filled.Call
 import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import com.velstrack.app.core.theme.DeepSpaceBlack
 import com.velstrack.app.core.theme.NeonCyan
 import com.velstrack.app.core.theme.RoseDanger
@@ -36,6 +41,7 @@ import com.velstrack.app.presentation.components.*
 @Composable
 fun EmployeeDashboardScreen(
     onLogout: () -> Unit,
+    onNavigateToDialer: () -> Unit,
     viewModel: EmployeeDashboardViewModel = hiltViewModel(),
     authViewModel: AuthViewModel = hiltViewModel()
 ) {
@@ -63,6 +69,25 @@ fun EmployeeDashboardScreen(
             permissionLauncher.launch(Manifest.permission.READ_CALL_LOG)
         } else {
             viewModel.startCallSyncWorker()
+            viewModel.loadDashboard()
+        }
+    }
+
+    val lifecycleOwner = LocalLifecycleOwner.current
+    val currentViewModel by rememberUpdatedState(viewModel)
+    
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                if (hasPermission) {
+                    currentViewModel.startCallSyncWorker()
+                    currentViewModel.loadDashboard()
+                }
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
         }
     }
 
@@ -86,6 +111,17 @@ fun EmployeeDashboardScreen(
                     }
                 }
             )
+        },
+        floatingActionButton = {
+            if (hasPermission) {
+                FloatingActionButton(
+                    onClick = onNavigateToDialer,
+                    containerColor = NeonCyan,
+                    contentColor = DeepSpaceBlack
+                ) {
+                    Icon(Icons.Default.Call, contentDescription = "Open Dialer")
+                }
+            }
         }
     ) { paddingValues ->
         Box(
