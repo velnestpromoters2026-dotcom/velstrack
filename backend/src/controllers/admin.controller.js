@@ -41,7 +41,7 @@ export const getEmployees = async (req, res) => {
             message: "Employees fetched successfully",
             data: employees.map(emp => ({
                 _id: emp._id.toString(),
-                name: emp.profile?.name || 'Unnamed',
+                name: (emp.profile?.firstName || 'Unknown') + ' ' + (emp.profile?.lastName || ''),
                 email: emp.email,
                 phone: emp.profile?.phone,
                 role: emp.role,
@@ -72,7 +72,12 @@ export const addEmployee = async (req, res) => {
             passwordHash,
             role: role || 'EMPLOYEE',
             isActive: true,
-            profile: { name, phone, department }
+            profile: { 
+                firstName: name ? name.split(' ')[0] : 'Employee', 
+                lastName: name && name.split(' ').length > 1 ? name.split(' ').slice(1).join(' ') : 'Name', 
+                phone, 
+                department 
+            }
         });
 
         res.status(201).json({
@@ -80,7 +85,7 @@ export const addEmployee = async (req, res) => {
             message: "Employee created successfully",
             data: {
                 _id: newEmployee._id.toString(),
-                name: newEmployee.profile?.name,
+                name: (newEmployee.profile?.firstName || '') + ' ' + (newEmployee.profile?.lastName || ''),
                 email: newEmployee.email,
                 phone: newEmployee.profile?.phone,
                 role: newEmployee.role,
