@@ -4,17 +4,7 @@
             "outputFile": "com.velstrack.app-mergeDebugResources-63:/values-v16/values-v16.xml",
             "map": [
                 {
-                    "source": "C:\\Users\\SUDHARSAN\\.gradle\\caches\\transforms-3\\9aa40b39053669ba36f6f5717a3cd047\\transformed\\core-1.12.0\\res\\values-v16\\values-v16.xml",
-                    "from": {
-                        "startLines": "2",
-                        "startColumns": "4",
-                        "startOffsets": "55",
-                        "endColumns": "65",
-                        "endOffsets": "116"
-                    }
-                },
-                {
-                    "source": "C:\\Users\\SUDHARSAN\\.gradle\\caches\\transforms-3\\848c85ada24aa5fe81630f07a0a3ec5f\\transformed\\appcompat-1.6.1\\res\\values-v16\\values-v16.xml",
+                    "source": "C:\\Users\\SUDHARSAN\\.gradle\\caches\\transforms-3\\edb526eea7b8d951baf4c262a1fa302e\\transformed\\appcompat-1.6.1\\res\\values-v16\\values-v16.xml",
                     "from": {
                         "startLines": "2",
                         "startColumns": "4",
@@ -30,6 +20,16 @@
                         "endLines": "6",
                         "endColumns": "12",
                         "endOffsets": "289"
+                    }
+                },
+                {
+                    "source": "C:\\Users\\SUDHARSAN\\.gradle\\caches\\transforms-3\\8d21056fb98bd0495dd1465599e2d226\\transformed\\core-1.12.0\\res\\values-v16\\values-v16.xml",
+                    "from": {
+                        "startLines": "2",
+                        "startColumns": "4",
+                        "startOffsets": "55",
+                        "endColumns": "65",
+                        "endOffsets": "116"
                     }
                 }
             ]

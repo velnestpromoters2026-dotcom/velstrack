@@ -4,7 +4,7 @@
             "outputFile": "com.velstrack.app-mergeDebugResources-63:/values-xlarge-v4/values-xlarge-v4.xml",
             "map": [
                 {
-                    "source": "C:\\Users\\SUDHARSAN\\.gradle\\caches\\transforms-3\\848c85ada24aa5fe81630f07a0a3ec5f\\transformed\\appcompat-1.6.1\\res\\values-xlarge-v4\\values-xlarge-v4.xml",
+                    "source": "C:\\Users\\SUDHARSAN\\.gradle\\caches\\transforms-3\\edb526eea7b8d951baf4c262a1fa302e\\transformed\\appcompat-1.6.1\\res\\values-xlarge-v4\\values-xlarge-v4.xml",
                     "from": {
                         "startLines": "2,3,4,5,6,7",
                         "startColumns": "4,4,4,4,4,4",
