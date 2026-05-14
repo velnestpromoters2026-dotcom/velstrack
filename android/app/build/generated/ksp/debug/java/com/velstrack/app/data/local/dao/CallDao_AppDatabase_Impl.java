@@ -32,12 +32,12 @@ import kotlinx.coroutines.flow.Flow;
 
 @Generated("androidx.room.RoomProcessor")
 @SuppressWarnings({"unchecked", "deprecation"})
-public final class CallDao_Impl implements CallDao {
+public final class CallDao_AppDatabase_Impl implements CallDao {
   private final RoomDatabase __db;
 
   private final EntityInsertionAdapter<CallEntity> __insertionAdapterOfCallEntity;
 
-  public CallDao_Impl(@NonNull final RoomDatabase __db) {
+  public CallDao_AppDatabase_Impl(@NonNull final RoomDatabase __db) {
     this.__db = __db;
     this.__insertionAdapterOfCallEntity = new EntityInsertionAdapter<CallEntity>(__db) {
       @Override

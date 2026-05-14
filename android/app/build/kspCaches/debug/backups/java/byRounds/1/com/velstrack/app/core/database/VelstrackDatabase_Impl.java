@@ -12,7 +12,7 @@ import androidx.room.util.TableInfo;
 import androidx.sqlite.db.SupportSQLiteDatabase;
 import androidx.sqlite.db.SupportSQLiteOpenHelper;
 import com.velstrack.app.data.local.dao.CallDao;
-import com.velstrack.app.data.local.dao.CallDao_Impl;
+import com.velstrack.app.data.local.dao.CallDao_VelstrackDatabase_Impl;
 import java.lang.Class;
 import java.lang.Override;
 import java.lang.String;
@@ -140,7 +140,7 @@ public final class VelstrackDatabase_Impl extends VelstrackDatabase {
   @NonNull
   protected Map<Class<?>, List<Class<?>>> getRequiredTypeConverters() {
     final HashMap<Class<?>, List<Class<?>>> _typeConvertersMap = new HashMap<Class<?>, List<Class<?>>>();
-    _typeConvertersMap.put(CallDao.class, CallDao_Impl.getRequiredConverters());
+    _typeConvertersMap.put(CallDao.class, CallDao_VelstrackDatabase_Impl.getRequiredConverters());
     return _typeConvertersMap;
   }
 
@@ -166,7 +166,7 @@ public final class VelstrackDatabase_Impl extends VelstrackDatabase {
     } else {
       synchronized(this) {
         if(_callDao == null) {
-          _callDao = new CallDao_Impl(this);
+          _callDao = new CallDao_VelstrackDatabase_Impl(this);
         }
         return _callDao;
       }
