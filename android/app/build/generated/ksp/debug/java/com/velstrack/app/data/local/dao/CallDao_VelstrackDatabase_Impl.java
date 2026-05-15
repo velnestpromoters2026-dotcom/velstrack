@@ -16,6 +16,7 @@ import com.velstrack.app.data.local.entity.CallEntity;
 import java.lang.Class;
 import java.lang.Exception;
 import java.lang.Integer;
+import java.lang.Long;
 import java.lang.Object;
 import java.lang.Override;
 import java.lang.String;
@@ -43,7 +44,7 @@ public final class CallDao_VelstrackDatabase_Impl implements CallDao {
       @Override
       @NonNull
       protected String createQuery() {
-        return "INSERT OR IGNORE INTO `calls` (`id`,`callFingerprint`,`clientPhoneHash`,`durationSeconds`,`callType`,`timestamp`,`isSynced`) VALUES (?,?,?,?,?,?,?)";
+        return "INSERT OR REPLACE INTO `calls` (`id`,`callFingerprint`,`clientPhoneHash`,`durationSeconds`,`callType`,`timestamp`,`isSynced`,`connectedAtMillis`,`disconnectedAtMillis`,`sessionState`,`callVerified`) VALUES (?,?,?,?,?,?,?,?,?,?,?)";
       }
 
       @Override
@@ -57,6 +58,19 @@ public final class CallDao_VelstrackDatabase_Impl implements CallDao {
         statement.bindLong(6, entity.getTimestamp());
         final int _tmp = entity.isSynced() ? 1 : 0;
         statement.bindLong(7, _tmp);
+        if (entity.getConnectedAtMillis() == null) {
+          statement.bindNull(8);
+        } else {
+          statement.bindLong(8, entity.getConnectedAtMillis());
+        }
+        if (entity.getDisconnectedAtMillis() == null) {
+          statement.bindNull(9);
+        } else {
+          statement.bindLong(9, entity.getDisconnectedAtMillis());
+        }
+        statement.bindString(10, entity.getSessionState());
+        final int _tmp_1 = entity.getCallVerified() ? 1 : 0;
+        statement.bindLong(11, _tmp_1);
       }
     };
   }
@@ -81,8 +95,81 @@ public final class CallDao_VelstrackDatabase_Impl implements CallDao {
   }
 
   @Override
+  public Object getCallById(final String id, final Continuation<? super CallEntity> $completion) {
+    final String _sql = "SELECT * FROM calls WHERE id = ? LIMIT 1";
+    final RoomSQLiteQuery _statement = RoomSQLiteQuery.acquire(_sql, 1);
+    int _argIndex = 1;
+    _statement.bindString(_argIndex, id);
+    final CancellationSignal _cancellationSignal = DBUtil.createCancellationSignal();
+    return CoroutinesRoom.execute(__db, false, _cancellationSignal, new Callable<CallEntity>() {
+      @Override
+      @Nullable
+      public CallEntity call() throws Exception {
+        final Cursor _cursor = DBUtil.query(__db, _statement, false, null);
+        try {
+          final int _cursorIndexOfId = CursorUtil.getColumnIndexOrThrow(_cursor, "id");
+          final int _cursorIndexOfCallFingerprint = CursorUtil.getColumnIndexOrThrow(_cursor, "callFingerprint");
+          final int _cursorIndexOfClientPhoneHash = CursorUtil.getColumnIndexOrThrow(_cursor, "clientPhoneHash");
+          final int _cursorIndexOfDurationSeconds = CursorUtil.getColumnIndexOrThrow(_cursor, "durationSeconds");
+          final int _cursorIndexOfCallType = CursorUtil.getColumnIndexOrThrow(_cursor, "callType");
+          final int _cursorIndexOfTimestamp = CursorUtil.getColumnIndexOrThrow(_cursor, "timestamp");
+          final int _cursorIndexOfIsSynced = CursorUtil.getColumnIndexOrThrow(_cursor, "isSynced");
+          final int _cursorIndexOfConnectedAtMillis = CursorUtil.getColumnIndexOrThrow(_cursor, "connectedAtMillis");
+          final int _cursorIndexOfDisconnectedAtMillis = CursorUtil.getColumnIndexOrThrow(_cursor, "disconnectedAtMillis");
+          final int _cursorIndexOfSessionState = CursorUtil.getColumnIndexOrThrow(_cursor, "sessionState");
+          final int _cursorIndexOfCallVerified = CursorUtil.getColumnIndexOrThrow(_cursor, "callVerified");
+          final CallEntity _result;
+          if (_cursor.moveToFirst()) {
+            final String _tmpId;
+            _tmpId = _cursor.getString(_cursorIndexOfId);
+            final String _tmpCallFingerprint;
+            _tmpCallFingerprint = _cursor.getString(_cursorIndexOfCallFingerprint);
+            final String _tmpClientPhoneHash;
+            _tmpClientPhoneHash = _cursor.getString(_cursorIndexOfClientPhoneHash);
+            final int _tmpDurationSeconds;
+            _tmpDurationSeconds = _cursor.getInt(_cursorIndexOfDurationSeconds);
+            final String _tmpCallType;
+            _tmpCallType = _cursor.getString(_cursorIndexOfCallType);
+            final long _tmpTimestamp;
+            _tmpTimestamp = _cursor.getLong(_cursorIndexOfTimestamp);
+            final boolean _tmpIsSynced;
+            final int _tmp;
+            _tmp = _cursor.getInt(_cursorIndexOfIsSynced);
+            _tmpIsSynced = _tmp != 0;
+            final Long _tmpConnectedAtMillis;
+            if (_cursor.isNull(_cursorIndexOfConnectedAtMillis)) {
+              _tmpConnectedAtMillis = null;
+            } else {
+              _tmpConnectedAtMillis = _cursor.getLong(_cursorIndexOfConnectedAtMillis);
+            }
+            final Long _tmpDisconnectedAtMillis;
+            if (_cursor.isNull(_cursorIndexOfDisconnectedAtMillis)) {
+              _tmpDisconnectedAtMillis = null;
+            } else {
+              _tmpDisconnectedAtMillis = _cursor.getLong(_cursorIndexOfDisconnectedAtMillis);
+            }
+            final String _tmpSessionState;
+            _tmpSessionState = _cursor.getString(_cursorIndexOfSessionState);
+            final boolean _tmpCallVerified;
+            final int _tmp_1;
+            _tmp_1 = _cursor.getInt(_cursorIndexOfCallVerified);
+            _tmpCallVerified = _tmp_1 != 0;
+            _result = new CallEntity(_tmpId,_tmpCallFingerprint,_tmpClientPhoneHash,_tmpDurationSeconds,_tmpCallType,_tmpTimestamp,_tmpIsSynced,_tmpConnectedAtMillis,_tmpDisconnectedAtMillis,_tmpSessionState,_tmpCallVerified);
+          } else {
+            _result = null;
+          }
+          return _result;
+        } finally {
+          _cursor.close();
+          _statement.release();
+        }
+      }
+    }, $completion);
+  }
+
+  @Override
   public Object getUnsyncedCalls(final Continuation<? super List<CallEntity>> $completion) {
-    final String _sql = "SELECT * FROM calls WHERE isSynced = 0";
+    final String _sql = "SELECT * FROM calls WHERE isSynced = 0 AND callVerified = 1";
     final RoomSQLiteQuery _statement = RoomSQLiteQuery.acquire(_sql, 0);
     final CancellationSignal _cancellationSignal = DBUtil.createCancellationSignal();
     return CoroutinesRoom.execute(__db, false, _cancellationSignal, new Callable<List<CallEntity>>() {
@@ -98,6 +185,10 @@ public final class CallDao_VelstrackDatabase_Impl implements CallDao {
           final int _cursorIndexOfCallType = CursorUtil.getColumnIndexOrThrow(_cursor, "callType");
           final int _cursorIndexOfTimestamp = CursorUtil.getColumnIndexOrThrow(_cursor, "timestamp");
           final int _cursorIndexOfIsSynced = CursorUtil.getColumnIndexOrThrow(_cursor, "isSynced");
+          final int _cursorIndexOfConnectedAtMillis = CursorUtil.getColumnIndexOrThrow(_cursor, "connectedAtMillis");
+          final int _cursorIndexOfDisconnectedAtMillis = CursorUtil.getColumnIndexOrThrow(_cursor, "disconnectedAtMillis");
+          final int _cursorIndexOfSessionState = CursorUtil.getColumnIndexOrThrow(_cursor, "sessionState");
+          final int _cursorIndexOfCallVerified = CursorUtil.getColumnIndexOrThrow(_cursor, "callVerified");
           final List<CallEntity> _result = new ArrayList<CallEntity>(_cursor.getCount());
           while (_cursor.moveToNext()) {
             final CallEntity _item;
@@ -117,7 +208,99 @@ public final class CallDao_VelstrackDatabase_Impl implements CallDao {
             final int _tmp;
             _tmp = _cursor.getInt(_cursorIndexOfIsSynced);
             _tmpIsSynced = _tmp != 0;
-            _item = new CallEntity(_tmpId,_tmpCallFingerprint,_tmpClientPhoneHash,_tmpDurationSeconds,_tmpCallType,_tmpTimestamp,_tmpIsSynced);
+            final Long _tmpConnectedAtMillis;
+            if (_cursor.isNull(_cursorIndexOfConnectedAtMillis)) {
+              _tmpConnectedAtMillis = null;
+            } else {
+              _tmpConnectedAtMillis = _cursor.getLong(_cursorIndexOfConnectedAtMillis);
+            }
+            final Long _tmpDisconnectedAtMillis;
+            if (_cursor.isNull(_cursorIndexOfDisconnectedAtMillis)) {
+              _tmpDisconnectedAtMillis = null;
+            } else {
+              _tmpDisconnectedAtMillis = _cursor.getLong(_cursorIndexOfDisconnectedAtMillis);
+            }
+            final String _tmpSessionState;
+            _tmpSessionState = _cursor.getString(_cursorIndexOfSessionState);
+            final boolean _tmpCallVerified;
+            final int _tmp_1;
+            _tmp_1 = _cursor.getInt(_cursorIndexOfCallVerified);
+            _tmpCallVerified = _tmp_1 != 0;
+            _item = new CallEntity(_tmpId,_tmpCallFingerprint,_tmpClientPhoneHash,_tmpDurationSeconds,_tmpCallType,_tmpTimestamp,_tmpIsSynced,_tmpConnectedAtMillis,_tmpDisconnectedAtMillis,_tmpSessionState,_tmpCallVerified);
+            _result.add(_item);
+          }
+          return _result;
+        } finally {
+          _cursor.close();
+          _statement.release();
+        }
+      }
+    }, $completion);
+  }
+
+  @Override
+  public Object getOrphanedSessions(final long olderThanMillis,
+      final Continuation<? super List<CallEntity>> $completion) {
+    final String _sql = "SELECT * FROM calls WHERE sessionState IN ('STARTED', 'DIALING', 'ACTIVE') AND timestamp < ?";
+    final RoomSQLiteQuery _statement = RoomSQLiteQuery.acquire(_sql, 1);
+    int _argIndex = 1;
+    _statement.bindLong(_argIndex, olderThanMillis);
+    final CancellationSignal _cancellationSignal = DBUtil.createCancellationSignal();
+    return CoroutinesRoom.execute(__db, false, _cancellationSignal, new Callable<List<CallEntity>>() {
+      @Override
+      @NonNull
+      public List<CallEntity> call() throws Exception {
+        final Cursor _cursor = DBUtil.query(__db, _statement, false, null);
+        try {
+          final int _cursorIndexOfId = CursorUtil.getColumnIndexOrThrow(_cursor, "id");
+          final int _cursorIndexOfCallFingerprint = CursorUtil.getColumnIndexOrThrow(_cursor, "callFingerprint");
+          final int _cursorIndexOfClientPhoneHash = CursorUtil.getColumnIndexOrThrow(_cursor, "clientPhoneHash");
+          final int _cursorIndexOfDurationSeconds = CursorUtil.getColumnIndexOrThrow(_cursor, "durationSeconds");
+          final int _cursorIndexOfCallType = CursorUtil.getColumnIndexOrThrow(_cursor, "callType");
+          final int _cursorIndexOfTimestamp = CursorUtil.getColumnIndexOrThrow(_cursor, "timestamp");
+          final int _cursorIndexOfIsSynced = CursorUtil.getColumnIndexOrThrow(_cursor, "isSynced");
+          final int _cursorIndexOfConnectedAtMillis = CursorUtil.getColumnIndexOrThrow(_cursor, "connectedAtMillis");
+          final int _cursorIndexOfDisconnectedAtMillis = CursorUtil.getColumnIndexOrThrow(_cursor, "disconnectedAtMillis");
+          final int _cursorIndexOfSessionState = CursorUtil.getColumnIndexOrThrow(_cursor, "sessionState");
+          final int _cursorIndexOfCallVerified = CursorUtil.getColumnIndexOrThrow(_cursor, "callVerified");
+          final List<CallEntity> _result = new ArrayList<CallEntity>(_cursor.getCount());
+          while (_cursor.moveToNext()) {
+            final CallEntity _item;
+            final String _tmpId;
+            _tmpId = _cursor.getString(_cursorIndexOfId);
+            final String _tmpCallFingerprint;
+            _tmpCallFingerprint = _cursor.getString(_cursorIndexOfCallFingerprint);
+            final String _tmpClientPhoneHash;
+            _tmpClientPhoneHash = _cursor.getString(_cursorIndexOfClientPhoneHash);
+            final int _tmpDurationSeconds;
+            _tmpDurationSeconds = _cursor.getInt(_cursorIndexOfDurationSeconds);
+            final String _tmpCallType;
+            _tmpCallType = _cursor.getString(_cursorIndexOfCallType);
+            final long _tmpTimestamp;
+            _tmpTimestamp = _cursor.getLong(_cursorIndexOfTimestamp);
+            final boolean _tmpIsSynced;
+            final int _tmp;
+            _tmp = _cursor.getInt(_cursorIndexOfIsSynced);
+            _tmpIsSynced = _tmp != 0;
+            final Long _tmpConnectedAtMillis;
+            if (_cursor.isNull(_cursorIndexOfConnectedAtMillis)) {
+              _tmpConnectedAtMillis = null;
+            } else {
+              _tmpConnectedAtMillis = _cursor.getLong(_cursorIndexOfConnectedAtMillis);
+            }
+            final Long _tmpDisconnectedAtMillis;
+            if (_cursor.isNull(_cursorIndexOfDisconnectedAtMillis)) {
+              _tmpDisconnectedAtMillis = null;
+            } else {
+              _tmpDisconnectedAtMillis = _cursor.getLong(_cursorIndexOfDisconnectedAtMillis);
+            }
+            final String _tmpSessionState;
+            _tmpSessionState = _cursor.getString(_cursorIndexOfSessionState);
+            final boolean _tmpCallVerified;
+            final int _tmp_1;
+            _tmp_1 = _cursor.getInt(_cursorIndexOfCallVerified);
+            _tmpCallVerified = _tmp_1 != 0;
+            _item = new CallEntity(_tmpId,_tmpCallFingerprint,_tmpClientPhoneHash,_tmpDurationSeconds,_tmpCallType,_tmpTimestamp,_tmpIsSynced,_tmpConnectedAtMillis,_tmpDisconnectedAtMillis,_tmpSessionState,_tmpCallVerified);
             _result.add(_item);
           }
           return _result;

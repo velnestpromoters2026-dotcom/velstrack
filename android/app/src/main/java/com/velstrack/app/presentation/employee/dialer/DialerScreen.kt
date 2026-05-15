@@ -411,9 +411,10 @@ fun DialerScreen(
             }
             
             Spacer(modifier = Modifier.height(24.dp))
-        }
-    }
-}
+        } // Closes else
+    } // Closes Main Column
+    } // Closes Scaffold
+} // Closes DialerScreen
 
 @Composable
 fun DialerKey(text: String, onClick: () -> Unit) {
