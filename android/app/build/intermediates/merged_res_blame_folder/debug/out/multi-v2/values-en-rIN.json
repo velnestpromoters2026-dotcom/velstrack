@@ -1,7 +1,7 @@
 {
     "logs": [
         {
-            "outputFile": "com.velstrack.app-mergeDebugResources-63:/values-en-rIN/values-en-rIN.xml",
+            "outputFile": "com.velstrack.app-mergeDebugResources-64:/values-en-rIN/values-en-rIN.xml",
             "map": [
                 {
                     "source": "C:\\Users\\SUDHARSAN\\.gradle\\caches\\transforms-3\\edb526eea7b8d951baf4c262a1fa302e\\transformed\\appcompat-1.6.1\\res\\values-en-rIN\\values-en-rIN.xml",

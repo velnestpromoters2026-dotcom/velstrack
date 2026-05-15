@@ -1,12 +1,16 @@
 package com.velstrack.app.presentation.employee.dialer.service
 
 import android.telecom.Call
+import android.telecom.CallAudioState
+import android.telecom.InCallService
 import android.telecom.VideoProfile
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
 object CallManager {
+
+    var inCallService: InCallService? = null
 
     private val _callState = MutableStateFlow<Call?>(null)
     val callState: StateFlow<Call?> = _callState.asStateFlow()
@@ -38,7 +42,11 @@ object CallManager {
     }
 
     fun endCall() {
-        _callState.value?.disconnect()
+        if (_callState.value != null) {
+            _callState.value?.disconnect()
+        } else {
+            _callStateInt.value = Call.STATE_DISCONNECTED
+        }
     }
 
     fun answerCall() {
@@ -47,5 +55,17 @@ object CallManager {
 
     fun rejectCall() {
         _callState.value?.reject(false, null)
+    }
+
+    fun setMuted(muted: Boolean) {
+        inCallService?.setMuted(muted)
+    }
+
+    fun setSpeakerOn(speakerOn: Boolean) {
+        if (speakerOn) {
+            inCallService?.setAudioRoute(CallAudioState.ROUTE_SPEAKER)
+        } else {
+            inCallService?.setAudioRoute(CallAudioState.ROUTE_EARPIECE)
+        }
     }
 }

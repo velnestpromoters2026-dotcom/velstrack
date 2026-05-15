@@ -105,56 +105,8 @@ fun ActiveCallScreen(
                 )
             }
 
-            // --- MIDDLE: Translucent Transcript ---
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f)
-                    .padding(vertical = 32.dp),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                // Fake Translation Bubble 1
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(16.dp))
-                        .background(Color.White.copy(alpha = 0.15f))
-                        .padding(16.dp)
-                ) {
-                    Text(
-                        text = "Translation is on for this call",
-                        color = Color.White.copy(alpha = 0.9f),
-                        fontSize = 15.sp,
-                        textAlign = TextAlign.Center
-                    )
-                }
-                
-                Spacer(modifier = Modifier.height(16.dp))
-                
-                // Fake Transcript Bubble 2
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth(0.9f)
-                        .clip(RoundedCornerShape(16.dp))
-                        .background(Color.White.copy(alpha = 0.15f))
-                        .padding(16.dp)
-                ) {
-                    Column {
-                        Text(
-                            text = "Hello, will you be available in December for a photo?",
-                            color = Color.White.copy(alpha = 0.7f),
-                            fontSize = 14.sp
-                        )
-                        Spacer(modifier = Modifier.height(12.dp))
-                        Text(
-                            text = "Hi, are you available to cater a wedding on December 6?",
-                            color = Color.White,
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Medium
-                        )
-                    }
-                }
-            }
+            // --- MIDDLE: Spacer ---
+            Spacer(modifier = Modifier.weight(1f))
 
             // --- BOTTOM: Controls Grid ---
             Column(
@@ -170,7 +122,10 @@ fun ActiveCallScreen(
                         icon = Icons.Rounded.VolumeUp,
                         label = "Speaker",
                         isActive = isSpeakerOn,
-                        onClick = { isSpeakerOn = !isSpeakerOn }
+                        onClick = { 
+                            isSpeakerOn = !isSpeakerOn
+                            CallManager.setSpeakerOn(isSpeakerOn)
+                        }
                     )
                     CallControlButton(
                         icon = Icons.Rounded.Videocam,
@@ -182,7 +137,10 @@ fun ActiveCallScreen(
                         icon = Icons.Rounded.MicOff,
                         label = "Mute",
                         isActive = isMuted,
-                        onClick = { isMuted = !isMuted }
+                        onClick = { 
+                            isMuted = !isMuted
+                            CallManager.setMuted(isMuted)
+                        }
                     )
                 }
 

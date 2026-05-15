@@ -1,7 +1,7 @@
 {
     "logs": [
         {
-            "outputFile": "com.velstrack.app-mergeDebugResources-63:/values/values.xml",
+            "outputFile": "com.velstrack.app-mergeDebugResources-64:/values/values.xml",
             "map": [
                 {
                     "source": "C:\\Users\\SUDHARSAN\\.gradle\\caches\\transforms-3\\cf9eb3951b1b4604f6bac7ccc5392abb\\transformed\\lottie-6.1.0\\res\\values\\values.xml",

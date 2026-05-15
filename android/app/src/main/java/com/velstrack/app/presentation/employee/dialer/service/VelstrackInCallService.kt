@@ -9,6 +9,7 @@ class VelstrackInCallService : InCallService() {
 
     override fun onCallAdded(call: Call?) {
         super.onCallAdded(call)
+        CallManager.inCallService = this
         Log.d("VelstrackInCallService", "Call Added: ${call?.state}")
         
         call?.let {
@@ -34,5 +35,6 @@ class VelstrackInCallService : InCallService() {
         super.onCallRemoved(call)
         Log.d("VelstrackInCallService", "Call Removed")
         CallManager.updateCall(null)
+        CallManager.inCallService = null
     }
 }

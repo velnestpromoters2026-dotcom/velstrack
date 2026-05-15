@@ -1,34 +1,34 @@
 [
     {
-        "merged": "com.velstrack.app-merged_res-65:/xml_backup_rules.xml.flat",
-        "source": "com.velstrack.app-main-67:/xml/backup_rules.xml"
+        "merged": "com.velstrack.app-merged_res-66:/drawable_ic_launcher_background.xml.flat",
+        "source": "com.velstrack.app-main-68:/drawable/ic_launcher_background.xml"
     },
     {
-        "merged": "com.velstrack.app-merged_res-65:/drawable_ic_launcher_background.xml.flat",
-        "source": "com.velstrack.app-main-67:/drawable/ic_launcher_background.xml"
+        "merged": "com.velstrack.app-merged_res-66:/drawable_ic_launcher_monochrome.xml.flat",
+        "source": "com.velstrack.app-main-68:/drawable/ic_launcher_monochrome.xml"
     },
     {
-        "merged": "com.velstrack.app-merged_res-65:/drawable_ic_launcher_foreground.xml.flat",
-        "source": "com.velstrack.app-main-67:/drawable/ic_launcher_foreground.xml"
+        "merged": "com.velstrack.app-merged_res-66:/mipmap-anydpi-v26_ic_launcher_round.xml.flat",
+        "source": "com.velstrack.app-main-68:/mipmap-anydpi-v26/ic_launcher_round.xml"
     },
     {
-        "merged": "com.velstrack.app-merged_res-65:/drawable_ic_launcher_monochrome.xml.flat",
-        "source": "com.velstrack.app-main-67:/drawable/ic_launcher_monochrome.xml"
+        "merged": "com.velstrack.app-merged_res-66:/xml_data_extraction_rules.xml.flat",
+        "source": "com.velstrack.app-main-68:/xml/data_extraction_rules.xml"
     },
     {
-        "merged": "com.velstrack.app-merged_res-65:/mipmap-anydpi-v26_ic_launcher_round.xml.flat",
-        "source": "com.velstrack.app-main-67:/mipmap-anydpi-v26/ic_launcher_round.xml"
+        "merged": "com.velstrack.app-merged_res-66:/drawable_ic_velstrack_foreground.xml.flat",
+        "source": "com.velstrack.app-main-68:/drawable/ic_velstrack_foreground.xml"
     },
     {
-        "merged": "com.velstrack.app-merged_res-65:/drawable_ic_velstrack_foreground.xml.flat",
-        "source": "com.velstrack.app-main-67:/drawable/ic_velstrack_foreground.xml"
+        "merged": "com.velstrack.app-merged_res-66:/drawable_ic_launcher_foreground.xml.flat",
+        "source": "com.velstrack.app-main-68:/drawable/ic_launcher_foreground.xml"
     },
     {
-        "merged": "com.velstrack.app-merged_res-65:/mipmap-anydpi-v26_ic_launcher.xml.flat",
-        "source": "com.velstrack.app-main-67:/mipmap-anydpi-v26/ic_launcher.xml"
+        "merged": "com.velstrack.app-merged_res-66:/mipmap-anydpi-v26_ic_launcher.xml.flat",
+        "source": "com.velstrack.app-main-68:/mipmap-anydpi-v26/ic_launcher.xml"
     },
     {
-        "merged": "com.velstrack.app-merged_res-65:/xml_data_extraction_rules.xml.flat",
-        "source": "com.velstrack.app-main-67:/xml/data_extraction_rules.xml"
+        "merged": "com.velstrack.app-merged_res-66:/xml_backup_rules.xml.flat",
+        "source": "com.velstrack.app-main-68:/xml/backup_rules.xml"
     }
 ]

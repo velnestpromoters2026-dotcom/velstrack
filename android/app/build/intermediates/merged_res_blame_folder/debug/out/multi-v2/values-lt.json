@@ -1,7 +1,7 @@
 {
     "logs": [
         {
-            "outputFile": "com.velstrack.app-mergeDebugResources-63:/values-lt/values-lt.xml",
+            "outputFile": "com.velstrack.app-mergeDebugResources-64:/values-lt/values-lt.xml",
             "map": [
                 {
                     "source": "C:\\Users\\SUDHARSAN\\.gradle\\caches\\transforms-3\\8e49e732bb990b51b124f50ae10bdae5\\transformed\\material3-1.1.2\\res\\values-lt\\values-lt.xml",
