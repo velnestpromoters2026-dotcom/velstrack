@@ -40,6 +40,18 @@ interface ApiService {
     @GET("meta/campaigns")
     suspend fun getMetaCampaigns(): Response<ApiResponse<List<MetaCampaignDto>>>
 
+    @GET("admin/meta/status")
+    suspend fun getMetaStatus(): Response<ApiResponse<MetaStatusDto>>
+
+    @GET("admin/targets")
+    suspend fun getTargets(): Response<ApiResponse<List<TargetDto>>>
+
+    @POST("admin/targets")
+    suspend fun createTarget(@Body request: CreateTargetRequest): Response<ApiResponse<TargetDto>>
+
+    @GET("admin/analytics")
+    suspend fun getAnalytics(): Response<ApiResponse<AnalyticsDto>>
+
     @GET("employee/dashboard")
     suspend fun getEmployeeDashboardStats(): Response<ApiResponse<EmployeeDashboardDto>>
 }

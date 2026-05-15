@@ -1,6 +1,7 @@
 import CallLog from '../models/CallLog.js';
 import User from '../models/User.js';
 import MetaCampaign from '../models/MetaCampaign.js';
+import Target from '../models/Target.js';
 import bcrypt from 'bcryptjs';
 
 export const getDashboardStats = async (req, res) => {
@@ -122,5 +123,115 @@ export const getMetaCampaigns = async (req, res) => {
         });
     } catch (error) {
         res.status(500).json({ success: false, message: 'Failed to fetch meta campaigns' });
+    }
+};
+
+export const getMetaStatus = async (req, res) => {
+    try {
+        // Mock state for connection verification system
+        // STATE 1: Not connected
+        // STATE 2: Connected but no campaigns
+        // STATE 3: Campaigns exist but inactive
+        // STATE 4: Campaigns actively delivering
+        
+        const campaignsCount = await MetaCampaign.countDocuments();
+        let state = "NOT_CONNECTED";
+        let message = "Meta account not connected";
+        
+        // Simulating the logic: assuming it's connected if we have a token (mocked as true for now)
+        const isConnected = true; 
+        
+        if (isConnected) {
+            if (campaignsCount === 0) {
+                state = "CONNECTED_NO_CAMPAIGNS";
+                message = "Meta account connected successfully. Create your first campaign in Meta Ads Manager to begin receiving analytics.";
+            } else {
+                const activeCount = await MetaCampaign.countDocuments({ status: 'ACTIVE' });
+                if (activeCount > 0) {
+                    state = "ACTIVE_DELIVERY";
+                    message = "Campaigns are actively delivering";
+                } else {
+                    state = "CAMPAIGNS_INACTIVE";
+                    message = "Campaigns exist but are inactive";
+                }
+            }
+        }
+
+        res.json({ success: true, data: { state, message } });
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'Failed to fetch meta status' });
+    }
+};
+
+export const getTargets = async (req, res) => {
+    try {
+        const targets = await Target.find().populate('employeeId', 'profile.firstName profile.lastName email');
+        res.json({ success: true, data: targets });
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'Failed to fetch targets' });
+    }
+};
+
+export const createTarget = async (req, res) => {
+    try {
+        const { employeeId, targetType, targetValue, periodStart, periodEnd } = req.body;
+        
+        const target = await Target.create({
+            employeeId,
+            targetType,
+            targetValue,
+            achievedValue: 0,
+            periodStart: new Date(periodStart),
+            periodEnd: new Date(periodEnd),
+            status: 'ACTIVE'
+        });
+
+        res.status(201).json({ success: true, message: "Target created", data: target });
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'Failed to create target: ' + error.message });
+    }
+};
+
+export const updateTarget = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const updates = req.body;
+        const target = await Target.findByIdAndUpdate(id, updates, { new: true });
+        res.json({ success: true, message: "Target updated", data: target });
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'Failed to update target' });
+    }
+};
+
+export const getAnalytics = async (req, res) => {
+    try {
+        // Return dummy dense analytics for charts
+        const dailyCalls = [
+            { date: 'Mon', calls: 45 },
+            { date: 'Tue', calls: 52 },
+            { date: 'Wed', calls: 38 },
+            { date: 'Thu', calls: 65 },
+            { date: 'Fri', calls: 48 }
+        ];
+
+        const employeeRanking = await User.find({ role: 'EMPLOYEE' }).select('profile email');
+        // Add fake ranking data
+        const rankings = employeeRanking.map((emp, index) => ({
+            _id: emp._id.toString(),
+            name: (emp.profile?.firstName || 'Unknown') + ' ' + (emp.profile?.lastName || ''),
+            callsToday: Math.floor(Math.random() * 50) + 10,
+            targetProgress: Math.random(),
+            trend: Math.random() > 0.5 ? 'UP' : 'DOWN'
+        })).sort((a, b) => b.callsToday - a.callsToday);
+
+        res.json({
+            success: true,
+            data: {
+                dailyCalls,
+                rankings
+            }
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'Failed to fetch analytics' });
     }
 };
