@@ -70,19 +70,6 @@ fun RootNavGraph() {
         
         composable("employee_dashboard") { backStackEntry ->
             val viewModel: com.velstrack.app.presentation.employee.EmployeeDashboardViewModel = androidx.hilt.navigation.compose.hiltViewModel()
-            
-            // Check for simulated call result
-            val savedStateHandle = backStackEntry.savedStateHandle
-            val callDuration = savedStateHandle.get<Int>("call_duration")
-            val callNumber = savedStateHandle.get<String>("call_number")
-            
-            if (callDuration != null && callNumber != null) {
-                androidx.compose.runtime.LaunchedEffect(callDuration, callNumber) {
-                    viewModel.logManualCallSession(callNumber, callDuration)
-                    savedStateHandle.remove<Int>("call_duration")
-                    savedStateHandle.remove<String>("call_number")
-                }
-            }
 
             EmployeeDashboardScreen(
                 viewModel = viewModel,
@@ -111,11 +98,13 @@ fun RootNavGraph() {
             ActiveCallScreen(
                 phoneNumber = number,
                 onCallEnded = { durationSeconds ->
-                    // Instead of waiting for ON_RESUME, we navigate back directly
-                    // and we can either pass the duration back or save it to SharedPreferences
-                    // and the dashboard will pick it up and sync it!
-                    navController.previousBackStackEntry?.savedStateHandle?.set("call_duration", durationSeconds)
-                    navController.previousBackStackEntry?.savedStateHandle?.set("call_number", number)
+                    val context = androidx.compose.ui.platform.LocalContext.current
+                    val prefs = context.getSharedPreferences("velstrack_prefs", android.content.Context.MODE_PRIVATE)
+                    prefs.edit()
+                        .putInt("completed_call_duration", durationSeconds)
+                        .putString("completed_call_number", number)
+                        .apply()
+                    
                     navController.popBackStack("employee_dashboard", false)
                 }
             )

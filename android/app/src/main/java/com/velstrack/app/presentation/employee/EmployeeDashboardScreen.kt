@@ -84,12 +84,36 @@ fun EmployeeDashboardScreen(
 
     val lifecycleOwner = LocalLifecycleOwner.current
     val currentViewModel by rememberUpdatedState(viewModel)
+    val context = LocalContext.current
     
-    // Check for simulated call result when returning from ActiveCallScreen
-    val navController = LocalContext.current as? androidx.activity.ComponentActivity
-    // Since we don't have navController directly injected, we can just observe it using a SideEffect or pass it up?
-    // Actually, EmployeeDashboardScreen doesn't have the NavController. It's in NavGraph.
-    // I should just add it to the NavGraph.
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                // Check if a call just completed
+                val prefs = context.getSharedPreferences("velstrack_prefs", android.content.Context.MODE_PRIVATE)
+                val callDuration = prefs.getInt("completed_call_duration", -1)
+                val callNumber = prefs.getString("completed_call_number", null)
+                
+                if (callDuration != -1 && callNumber != null) {
+                    currentViewModel.logManualCallSession(callNumber, callDuration)
+                    prefs.edit()
+                        .remove("completed_call_duration")
+                        .remove("completed_call_number")
+                        .apply()
+                } else if (hasPermission) {
+                    currentViewModel.startCallSyncWorker()
+                    coroutineScope.launch {
+                        currentViewModel.syncCallsNowAndLoad()
+                    }
+                }
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
+    }
+    
     val dashboardState by viewModel.dashboardState.collectAsState()
 
     Scaffold(
