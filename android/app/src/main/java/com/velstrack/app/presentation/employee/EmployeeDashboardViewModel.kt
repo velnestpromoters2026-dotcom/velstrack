@@ -88,6 +88,9 @@ class EmployeeDashboardViewModel @Inject constructor(
         _dashboardState.value = UiState.Loading
         withContext(Dispatchers.IO) {
             try {
+                // Add a small delay to allow native Android dialer to write to CallLog database
+                kotlinx.coroutines.delay(2000)
+                
                 val prefs = context.getSharedPreferences("velstrack_prefs", Context.MODE_PRIVATE)
                 val pendingNumber = prefs.getString("pending_call_number", null)
                 val pendingCallTime = prefs.getLong("pending_call_time", 0L)
@@ -155,6 +158,8 @@ class EmployeeDashboardViewModel @Inject constructor(
                             .remove("pending_call_number")
                             .remove("pending_call_time")
                             .apply()
+                    } else {
+                        // Wait for system to write to CallLog, do not clear
                     }
                 }
 
