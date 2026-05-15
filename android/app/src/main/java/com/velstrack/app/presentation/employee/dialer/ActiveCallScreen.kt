@@ -34,8 +34,13 @@ fun ActiveCallScreen(
     var isMuted by remember { mutableStateOf(false) }
     var isSpeakerOn by remember { mutableStateOf(true) }
 
+    var hasCallStarted by remember { mutableStateOf(false) }
+
     LaunchedEffect(callStateInt) {
-        if (callStateInt == Call.STATE_DISCONNECTED) {
+        if (callStateInt != Call.STATE_DISCONNECTED && callStateInt != 0) {
+            hasCallStarted = true
+        }
+        if (callStateInt == Call.STATE_DISCONNECTED && hasCallStarted) {
             onCallEnded(durationSeconds)
         }
     }

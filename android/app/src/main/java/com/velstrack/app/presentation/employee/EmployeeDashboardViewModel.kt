@@ -89,77 +89,89 @@ class EmployeeDashboardViewModel @Inject constructor(
         withContext(Dispatchers.IO) {
             try {
                 // Add a small delay to allow native Android dialer to write to CallLog database
-                kotlinx.coroutines.delay(2000)
+                kotlinx.coroutines.delay(3000)
                 
                 val prefs = context.getSharedPreferences("velstrack_prefs", Context.MODE_PRIVATE)
                 val pendingNumber = prefs.getString("pending_call_number", null)
                 val pendingCallTime = prefs.getLong("pending_call_time", 0L)
 
                 if (pendingNumber != null) {
-                    val cursor = context.contentResolver.query(
-                        CallLog.Calls.CONTENT_URI,
-                        arrayOf(CallLog.Calls.NUMBER, CallLog.Calls.DURATION, CallLog.Calls.TYPE, CallLog.Calls.DATE),
-                        "${CallLog.Calls.DATE} >= ?",
-                        arrayOf(pendingCallTime.toString()),
-                        "${CallLog.Calls.DATE} DESC"
-                    )
+                    try {
+                        val cursor = context.contentResolver.query(
+                            CallLog.Calls.CONTENT_URI,
+                            arrayOf(CallLog.Calls.NUMBER, CallLog.Calls.DURATION, CallLog.Calls.TYPE, CallLog.Calls.DATE),
+                            "${CallLog.Calls.DATE} >= ?",
+                            arrayOf(pendingCallTime.toString()),
+                            "${CallLog.Calls.DATE} DESC"
+                        )
 
-                    val employeeId = sessionManager.getUserId().firstOrNull() ?: "UNKNOWN_EMP"
-                    var matchedCall: CallEntity? = null
+                        val employeeId = sessionManager.getUserId().firstOrNull() ?: "UNKNOWN_EMP"
+                        var matchedCall: CallEntity? = null
 
-                    cursor?.use { c ->
-                        val numberIdx = c.getColumnIndex(CallLog.Calls.NUMBER)
-                        val durationIdx = c.getColumnIndex(CallLog.Calls.DURATION)
-                        val typeIdx = c.getColumnIndex(CallLog.Calls.TYPE)
-                        val dateIdx = c.getColumnIndex(CallLog.Calls.DATE)
+                        cursor?.use { c ->
+                            val numberIdx = c.getColumnIndex(CallLog.Calls.NUMBER)
+                            val durationIdx = c.getColumnIndex(CallLog.Calls.DURATION)
+                            val typeIdx = c.getColumnIndex(CallLog.Calls.TYPE)
+                            val dateIdx = c.getColumnIndex(CallLog.Calls.DATE)
 
-                        while (c.moveToNext()) {
-                            val number = c.getString(numberIdx) ?: continue
-                            // Check if this call matches our pending number (strip formatting)
-                            val normalizedDbNumber = number.replace(Regex("[^0-9+]"), "")
-                            val normalizedPending = pendingNumber.replace(Regex("[^0-9+]"), "")
-                            
-                            if (normalizedDbNumber == normalizedPending || normalizedDbNumber.contains(normalizedPending) || normalizedPending.contains(normalizedDbNumber)) {
-                                val duration = c.getInt(durationIdx)
-                                val typeInt = c.getInt(typeIdx)
-                                val date = c.getLong(dateIdx)
+                            while (c.moveToNext()) {
+                                val number = c.getString(numberIdx) ?: continue
+                                // Check if this call matches our pending number (strip formatting)
+                                val normalizedDbNumber = number.replace(Regex("[^0-9+]"), "")
+                                val normalizedPending = pendingNumber.replace(Regex("[^0-9+]"), "")
+                                
+                                if (normalizedDbNumber == normalizedPending || normalizedDbNumber.contains(normalizedPending) || normalizedPending.contains(normalizedDbNumber)) {
+                                    val duration = c.getInt(durationIdx)
+                                    val typeInt = c.getInt(typeIdx)
+                                    val date = c.getLong(dateIdx)
 
-                                val typeStr = when (typeInt) {
-                                    CallLog.Calls.OUTGOING_TYPE -> "OUTGOING"
-                                    else -> "UNKNOWN"
-                                }
+                                    val typeStr = when (typeInt) {
+                                        CallLog.Calls.OUTGOING_TYPE -> "OUTGOING"
+                                        else -> "UNKNOWN"
+                                    }
 
-                                if (typeStr == "OUTGOING") {
-                                    val rawFingerprint = "${employeeId}${normalizedDbNumber}${date}${duration}"
-                                    val digest = MessageDigest.getInstance("SHA-256")
-                                    val hashBytes = digest.digest(rawFingerprint.toByteArray(Charsets.UTF_8))
-                                    val fingerprint = hashBytes.joinToString("") { "%02x".format(it) }
+                                    if (typeStr == "OUTGOING") {
+                                        val rawFingerprint = "${employeeId}${normalizedDbNumber}${date}${duration}"
+                                        val digest = MessageDigest.getInstance("SHA-256")
+                                        val hashBytes = digest.digest(rawFingerprint.toByteArray(Charsets.UTF_8))
+                                        val fingerprint = hashBytes.joinToString("") { "%02x".format(it) }
 
-                                    val id = "${hashPhoneNumber(number)}_${date}"
-                                    matchedCall = CallEntity(
-                                        id = id,
-                                        callFingerprint = fingerprint,
-                                        clientPhoneHash = hashPhoneNumber(number),
-                                        durationSeconds = duration,
-                                        callType = typeStr,
-                                        timestamp = date,
-                                        isSynced = false
-                                    )
-                                    break // Found the most recent matching call!
+                                        val id = "${hashPhoneNumber(number)}_${date}"
+                                        matchedCall = CallEntity(
+                                            id = id,
+                                            callFingerprint = fingerprint,
+                                            clientPhoneHash = hashPhoneNumber(number),
+                                            durationSeconds = duration,
+                                            callType = typeStr,
+                                            timestamp = date,
+                                            isSynced = false
+                                        )
+                                        break // Found the most recent matching call!
+                                    }
                                 }
                             }
                         }
-                    }
 
-                    if (matchedCall != null) {
-                        callDao.insertCalls(listOf(matchedCall!!))
-                        // Clear the pending number so we don't process it again
+                        if (matchedCall != null) {
+                            callDao.insertCalls(listOf(matchedCall!!))
+                            // Clear the pending number so we don't process it again
+                            prefs.edit()
+                                .remove("pending_call_number")
+                                .remove("pending_call_time")
+                                .apply()
+                        } else {
+                            // Wait for system to write to CallLog, do not clear
+                        }
+                    } catch (e: SecurityException) {
+                        e.printStackTrace()
+                        // Without READ_CALL_LOG permission, fallback sync is disabled.
+                        // We still clear the pending number so we don't keep trying and failing
                         prefs.edit()
                             .remove("pending_call_number")
                             .remove("pending_call_time")
                             .apply()
-                    } else {
-                        // Wait for system to write to CallLog, do not clear
+                    } catch (e: Exception) {
+                        e.printStackTrace()
                     }
                 }
 
