@@ -9,11 +9,11 @@ export const getDashboardStats = async (req, res) => {
         const activeEmployees = await User.countDocuments({ role: 'EMPLOYEE', isActive: true });
         const totalCallsSynced = await CallLog.countDocuments();
         
-        const recentLogs = await CallLog.find().sort({ timestamp: -1 }).limit(5).populate('employee', 'email');
+        const recentLogs = await CallLog.find().sort({ timestamp: -1 }).limit(5).populate('employeeId', 'email');
         const recentActivity = recentLogs.map(log => ({
             _id: log._id.toString(),
             type: 'Call Sync',
-            description: `Synced call from ${log.employee?.email || 'Unknown'}`,
+            description: `Synced call from ${log.employeeId?.email || 'Unknown'}`,
             timestamp: log.timestamp || new Date()
         }));
 
