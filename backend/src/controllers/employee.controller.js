@@ -1,5 +1,6 @@
 import CallLog from '../models/CallLog.js';
 import User from '../models/User.js';
+import Target from '../models/Target.js';
 
 export const getEmployeeDashboardStats = async (req, res) => {
     try {
@@ -32,13 +33,23 @@ export const getEmployeeDashboardStats = async (req, res) => {
             };
         });
 
+        // Fetch active daily target
+        const activeTarget = await Target.findOne({
+            employeeId: userId,
+            status: 'ACTIVE',
+            periodEnd: { $gte: new Date() }
+        }).sort({ createdAt: -1 });
+
+        const targetValue = activeTarget ? activeTarget.targetValue : 50;
+        const callsTrend = activeTarget ? (callsToday >= activeTarget.targetValue ? "Target Achieved" : "On track") : "On track";
+
         res.json({
             success: true,
             message: "Employee dashboard stats fetched successfully",
             data: {
                 callsToday,
-                target: 50, // Default target
-                callsTrend: "On track",
+                target: targetValue,
+                callsTrend: callsTrend,
                 recentCalls
             }
         });
