@@ -97,11 +97,12 @@ class EmployeeDashboardViewModel @Inject constructor(
 
                 if (pendingNumber != null) {
                     try {
+                        val searchTime = pendingCallTime - 60000
                         val cursor = context.contentResolver.query(
                             CallLog.Calls.CONTENT_URI,
                             arrayOf(CallLog.Calls.NUMBER, CallLog.Calls.DURATION, CallLog.Calls.TYPE, CallLog.Calls.DATE),
                             "${CallLog.Calls.DATE} >= ?",
-                            arrayOf(pendingCallTime.toString()),
+                            arrayOf(searchTime.toString()),
                             "${CallLog.Calls.DATE} DESC"
                         )
 

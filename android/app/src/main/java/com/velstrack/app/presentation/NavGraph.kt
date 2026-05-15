@@ -98,13 +98,7 @@ fun RootNavGraph() {
             val context = androidx.compose.ui.platform.LocalContext.current
             ActiveCallScreen(
                 phoneNumber = number,
-                onCallEnded = { durationSeconds ->
-                    val prefs = context.getSharedPreferences("velstrack_prefs", android.content.Context.MODE_PRIVATE)
-                    prefs.edit()
-                        .putInt("completed_call_duration", durationSeconds)
-                        .putString("completed_call_number", number)
-                        .apply()
-                    
+                onCallEnded = { 
                     navController.popBackStack("employee_dashboard", false)
                 }
             )

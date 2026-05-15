@@ -26,7 +26,7 @@ import kotlinx.coroutines.delay
 @Composable
 fun ActiveCallScreen(
     phoneNumber: String,
-    onCallEnded: (durationSeconds: Int) -> Unit
+    onCallEnded: () -> Unit
 ) {
     var durationSeconds by remember { mutableStateOf(0) }
     val callStateInt by CallManager.callStateInt.collectAsState()
@@ -41,7 +41,7 @@ fun ActiveCallScreen(
             hasCallStarted = true
         }
         if (callStateInt == Call.STATE_DISCONNECTED && hasCallStarted) {
-            onCallEnded(durationSeconds)
+            onCallEnded()
         }
     }
 
