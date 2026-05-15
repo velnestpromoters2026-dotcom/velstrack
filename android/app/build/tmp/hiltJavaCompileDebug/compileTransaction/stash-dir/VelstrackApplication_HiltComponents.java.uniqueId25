@@ -9,6 +9,7 @@ import com.velstrack.app.presentation.admin.AdminViewModel_HiltModules;
 import com.velstrack.app.presentation.admin.employee.AddEmployeeViewModel_HiltModules;
 import com.velstrack.app.presentation.auth.AuthViewModel_HiltModules;
 import com.velstrack.app.presentation.employee.EmployeeDashboardViewModel_HiltModules;
+import com.velstrack.app.presentation.employee.dialer.service.VelstrackInCallService_GeneratedInjector;
 import dagger.Binds;
 import dagger.Component;
 import dagger.Module;
@@ -154,7 +155,8 @@ public final class VelstrackApplication_HiltComponents {
 
   @Subcomponent
   @ServiceScoped
-  public abstract static class ServiceC implements ServiceComponent,
+  public abstract static class ServiceC implements VelstrackInCallService_GeneratedInjector,
+      ServiceComponent,
       GeneratedComponent {
     @Subcomponent.Builder
     abstract interface Builder extends ServiceComponentBuilder {

@@ -46,16 +46,11 @@ fun ActiveCallScreen(
     }
 
     LaunchedEffect(callStateInt) {
-        if (callStateInt == Call.STATE_ACTIVE || callStateInt == Call.STATE_DISCONNECTED) {
+        if (callStateInt == Call.STATE_ACTIVE) {
             while (true) {
                 delay(1000)
                 durationSeconds++
             }
-        } else if (callStateInt == 0 && durationSeconds == 0) { // Fallback if system UI intercepts
-             while (true) {
-                 delay(1000)
-                 durationSeconds++
-             }
         }
     }
 

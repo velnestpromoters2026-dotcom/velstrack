@@ -40,6 +40,8 @@ import com.velstrack.app.presentation.auth.AuthViewModel;
 import com.velstrack.app.presentation.auth.AuthViewModel_HiltModules_KeyModule_ProvideFactory;
 import com.velstrack.app.presentation.employee.EmployeeDashboardViewModel;
 import com.velstrack.app.presentation.employee.EmployeeDashboardViewModel_HiltModules_KeyModule_ProvideFactory;
+import com.velstrack.app.presentation.employee.dialer.service.VelstrackInCallService;
+import com.velstrack.app.presentation.employee.dialer.service.VelstrackInCallService_MembersInjector;
 import dagger.hilt.android.ActivityRetainedLifecycle;
 import dagger.hilt.android.ViewModelLifecycle;
 import dagger.hilt.android.flags.HiltWrapper_FragmentGetContextFix_FragmentGetContextFixModule;
@@ -608,6 +610,17 @@ public final class DaggerVelstrackApplication_HiltComponents_SingletonC {
       this.singletonCImpl = singletonCImpl;
 
 
+    }
+
+    @Override
+    public void injectVelstrackInCallService(VelstrackInCallService velstrackInCallService) {
+      injectVelstrackInCallService2(velstrackInCallService);
+    }
+
+    private VelstrackInCallService injectVelstrackInCallService2(VelstrackInCallService instance) {
+      VelstrackInCallService_MembersInjector.injectCallDao(instance, singletonCImpl.provideCallDaoProvider.get());
+      VelstrackInCallService_MembersInjector.injectSessionManager(instance, singletonCImpl.sessionManagerProvider.get());
+      return instance;
     }
   }
 
