@@ -8,6 +8,7 @@ import com.velstrack.app.data.remote.dto.EmployeeDto
 import com.velstrack.app.data.remote.dto.MetaCampaignDto
 import com.velstrack.app.data.remote.dto.AnalyticsDto
 import com.velstrack.app.data.remote.dto.TargetDto
+import com.velstrack.app.data.remote.dto.CreateTargetRequest
 import com.velstrack.app.data.remote.dto.MetaStatusDto
 import com.velstrack.app.domain.repository.AdminRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -118,6 +119,16 @@ class AdminViewModel @Inject constructor(
                     }
                 } else {
                     _targetsState.value = UiState.Error(result.exceptionOrNull()?.message ?: "Unknown error")
+                }
+            }
+        }
+    }
+
+    fun createTarget(request: CreateTargetRequest) {
+        viewModelScope.launch {
+            repository.createTarget(request).collect { result ->
+                if (result.isSuccess) {
+                    loadTargets() // Refresh the list
                 }
             }
         }

@@ -101,9 +101,12 @@ fun AdminTeamTab(viewModel: AdminViewModel, onNavigateToAddEmployee: () -> Unit)
 @Composable
 fun AdminTargetsTab(viewModel: AdminViewModel) {
     val state by viewModel.targetsState.collectAsState()
+    val employeesState by viewModel.employeesState.collectAsState()
+    var showAddDialog by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         viewModel.loadTargets()
+        viewModel.loadEmployees()
     }
 
     Box(modifier = Modifier.fillMaxSize().padding(16.dp)) {
@@ -157,6 +160,27 @@ fun AdminTargetsTab(viewModel: AdminViewModel) {
                 }
             }
             else -> Unit
+        }
+
+        FloatingActionButton(
+            onClick = { showAddDialog = true },
+            containerColor = NeonCyan,
+            contentColor = DeepSpaceBlack,
+            modifier = Modifier.align(Alignment.BottomEnd).padding(24.dp)
+        ) {
+            Icon(imageVector = Icons.Default.Add, contentDescription = "Add Target")
+        }
+
+        if (showAddDialog) {
+            val employees = (employeesState as? UiState.Success)?.data ?: emptyList()
+            TargetAssignmentDialog(
+                employees = employees,
+                onDismiss = { showAddDialog = false },
+                onSubmit = { req ->
+                    viewModel.createTarget(req)
+                    showAddDialog = false
+                }
+            )
         }
     }
 }
