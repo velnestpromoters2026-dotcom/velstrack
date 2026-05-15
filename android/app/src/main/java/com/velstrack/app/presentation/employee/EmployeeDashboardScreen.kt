@@ -84,7 +84,6 @@ fun EmployeeDashboardScreen(
 
     val lifecycleOwner = LocalLifecycleOwner.current
     val currentViewModel by rememberUpdatedState(viewModel)
-    val context = LocalContext.current
     
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
