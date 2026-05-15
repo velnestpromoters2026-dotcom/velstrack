@@ -90,22 +90,18 @@ class EmployeeDashboardViewModel @Inject constructor(
             try {
                 val prefs = context.getSharedPreferences("velstrack_prefs", Context.MODE_PRIVATE)
                 val pendingNumber = prefs.getString("pending_call_number", null)
+                val pendingCallTime = prefs.getLong("pending_call_time", 0L)
 
                 if (pendingNumber != null) {
-                    val calendar = Calendar.getInstance()
-                    calendar.set(Calendar.HOUR_OF_DAY, 0)
-                    calendar.set(Calendar.MINUTE, 0)
-                    calendar.set(Calendar.SECOND, 0)
-                    val startOfDay = calendar.timeInMillis
-
                     val cursor = context.contentResolver.query(
                         CallLog.Calls.CONTENT_URI,
                         arrayOf(CallLog.Calls.NUMBER, CallLog.Calls.DURATION, CallLog.Calls.TYPE, CallLog.Calls.DATE),
                         "${CallLog.Calls.DATE} >= ?",
-                        arrayOf(startOfDay.toString()),
+                        arrayOf(pendingCallTime.toString()),
                         "${CallLog.Calls.DATE} DESC"
                     )
 
+                    val employeeId = sessionManager.getUserId().firstOrNull() ?: "UNKNOWN_EMP"
                     var matchedCall: CallEntity? = null
 
                     cursor?.use { c ->
@@ -130,9 +126,7 @@ class EmployeeDashboardViewModel @Inject constructor(
                                     else -> "UNKNOWN"
                                 }
 
-                                if (typeStr == "OUTGOING" && duration >= 2) {
-                                    val employeeId = sessionManager.getUserId().firstOrNull() ?: "UNKNOWN_EMP"
-                                    
+                                if (typeStr == "OUTGOING") {
                                     val rawFingerprint = "${employeeId}${normalizedDbNumber}${date}${duration}"
                                     val digest = MessageDigest.getInstance("SHA-256")
                                     val hashBytes = digest.digest(rawFingerprint.toByteArray(Charsets.UTF_8))
@@ -157,7 +151,10 @@ class EmployeeDashboardViewModel @Inject constructor(
                     if (matchedCall != null) {
                         callDao.insertCalls(listOf(matchedCall!!))
                         // Clear the pending number so we don't process it again
-                        prefs.edit().remove("pending_call_number").apply()
+                        prefs.edit()
+                            .remove("pending_call_number")
+                            .remove("pending_call_time")
+                            .apply()
                     }
                 }
 

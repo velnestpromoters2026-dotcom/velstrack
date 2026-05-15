@@ -62,6 +62,7 @@ fun DialerScreen(
             val prefs = context.getSharedPreferences("velstrack_prefs", Context.MODE_PRIVATE)
             prefs.edit()
                 .putString("pending_call_number", phoneNumber)
+                .putLong("pending_call_time", System.currentTimeMillis() - 5000) // 5 seconds buffer
                 .apply()
             val intent = Intent(Intent.ACTION_CALL, Uri.parse("tel:$phoneNumber"))
             context.startActivity(intent)
@@ -271,6 +272,7 @@ fun DialerScreen(
                                 val prefs = context.getSharedPreferences("velstrack_prefs", Context.MODE_PRIVATE)
                                 prefs.edit()
                                     .putString("pending_call_number", phoneNumber)
+                                    .putLong("pending_call_time", System.currentTimeMillis() - 5000) // 5 seconds buffer
                                     .apply()
                                 val intent = Intent(Intent.ACTION_CALL, Uri.parse("tel:$phoneNumber"))
                                 context.startActivity(intent)
