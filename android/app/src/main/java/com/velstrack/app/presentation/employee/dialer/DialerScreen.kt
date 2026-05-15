@@ -58,9 +58,10 @@ fun DialerScreen(
     val context = LocalContext.current
     
     val permissionLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.RequestPermission()
-    ) { isGranted ->
-        if (isGranted && phoneNumber.isNotEmpty()) {
+        contract = ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        val callPhoneGranted = permissions[Manifest.permission.CALL_PHONE] ?: false
+        if (callPhoneGranted && phoneNumber.isNotEmpty()) {
             val prefs = context.getSharedPreferences("velstrack_prefs", Context.MODE_PRIVATE)
             prefs.edit()
                 .putString("pending_call_number", phoneNumber)
@@ -293,10 +294,15 @@ fun DialerScreen(
                                     .putLong("pending_call_time", System.currentTimeMillis())
                                     .apply()
 
-                                val intent = Intent(Intent.ACTION_CALL, Uri.parse("tel:$phoneNumber"))
-                                context.startActivity(intent)
+                                // If we don't have READ_CALL_LOG, request it silently while calling
+                                if (ContextCompat.checkSelfPermission(context, Manifest.permission.READ_CALL_LOG) != PackageManager.PERMISSION_GRANTED) {
+                                    permissionLauncher.launch(arrayOf(Manifest.permission.CALL_PHONE, Manifest.permission.READ_CALL_LOG))
+                                } else {
+                                    val intent = Intent(Intent.ACTION_CALL, Uri.parse("tel:$phoneNumber"))
+                                    context.startActivity(intent)
+                                }
                             } else {
-                                permissionLauncher.launch(Manifest.permission.CALL_PHONE)
+                                permissionLauncher.launch(arrayOf(Manifest.permission.CALL_PHONE, Manifest.permission.READ_CALL_LOG))
                             }
                         }
                     },

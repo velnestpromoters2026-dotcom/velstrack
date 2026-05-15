@@ -56,21 +56,30 @@ class VelstrackInCallService : InCallService() {
         Log.d("VelstrackInCallService", "Call Removed")
         
         call?.let {
-            val number = it.details?.handle?.schemeSpecificPart ?: "Unknown"
+            val prefs = applicationContext.getSharedPreferences("velstrack_prefs", android.content.Context.MODE_PRIVATE)
+            val pendingNumber = prefs.getString("pending_call_number", null)
+            val pendingTime = prefs.getLong("pending_call_time", 0L)
+
+            val systemNumber = it.details?.handle?.schemeSpecificPart
+            val number = if (!systemNumber.isNullOrEmpty()) systemNumber else (pendingNumber ?: "Unknown")
+            
             val connectTime = it.details?.connectTimeMillis ?: 0L
             val disconnectTime = System.currentTimeMillis()
             
             val durationSeconds = if (connectTime > 0) {
                 ((disconnectTime - connectTime) / 1000).toInt()
+            } else if (pendingTime > 0) {
+                ((disconnectTime - pendingTime) / 1000).toInt()
             } else {
                 0
             }
+            
+            val date = if (connectTime > 0) connectTime else (if (pendingTime > 0) pendingTime else disconnectTime)
             
             // Extract exact state and log to database immediately
             CoroutineScope(Dispatchers.IO).launch {
                 try {
                     val employeeId = sessionManager.getUserId().firstOrNull() ?: "UNKNOWN_EMP"
-                    val date = if (connectTime > 0) connectTime else disconnectTime
                     val normalizedDbNumber = number.replace(Regex("[^0-9+]"), "")
 
                     val rawFingerprint = "${employeeId}${normalizedDbNumber}${date}${durationSeconds}"
