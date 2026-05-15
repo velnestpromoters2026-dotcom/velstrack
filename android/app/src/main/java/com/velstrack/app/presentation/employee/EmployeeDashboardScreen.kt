@@ -85,24 +85,11 @@ fun EmployeeDashboardScreen(
     val lifecycleOwner = LocalLifecycleOwner.current
     val currentViewModel by rememberUpdatedState(viewModel)
     
-    DisposableEffect(lifecycleOwner) {
-        val observer = LifecycleEventObserver { _, event ->
-            if (event == Lifecycle.Event.ON_RESUME) {
-                if (hasPermission) {
-                    currentViewModel.startCallSyncWorker()
-                    coroutineScope.launch {
-                        delay(3000) // Give Android 3 seconds to log the call safely
-                        currentViewModel.syncCallsNowAndLoad()
-                    }
-                }
-            }
-        }
-        lifecycleOwner.lifecycle.addObserver(observer)
-        onDispose {
-            lifecycleOwner.lifecycle.removeObserver(observer)
-        }
-    }
-
+    // Check for simulated call result when returning from ActiveCallScreen
+    val navController = LocalContext.current as? androidx.activity.ComponentActivity
+    // Since we don't have navController directly injected, we can just observe it using a SideEffect or pass it up?
+    // Actually, EmployeeDashboardScreen doesn't have the NavController. It's in NavGraph.
+    // I should just add it to the NavGraph.
     val dashboardState by viewModel.dashboardState.collectAsState()
 
     Scaffold(

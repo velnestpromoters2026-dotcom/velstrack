@@ -49,7 +49,7 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 @Composable
 fun DialerScreen(
     onNavigateBack: () -> Unit,
-    onCallEnded: () -> Unit // Trigger sync after call
+    onNavigateToActiveCall: (String) -> Unit
 ) {
     var phoneNumberState by remember { mutableStateOf(TextFieldValue("")) }
     val phoneNumber = phoneNumberState.text
@@ -61,12 +61,10 @@ fun DialerScreen(
         if (isGranted && phoneNumber.isNotEmpty()) {
             val prefs = context.getSharedPreferences("velstrack_prefs", Context.MODE_PRIVATE)
             prefs.edit()
-                .putString("pending_call_number", phoneNumber)
-                .putLong("pending_call_time", System.currentTimeMillis() - 5000) // 5 seconds buffer
+                .putLong("pending_call_time", System.currentTimeMillis())
                 .apply()
-            val intent = Intent(Intent.ACTION_CALL, Uri.parse("tel:$phoneNumber"))
-            context.startActivity(intent)
-            onCallEnded()
+            
+            onNavigateToActiveCall(phoneNumber)
         }
     }
 
@@ -271,12 +269,10 @@ fun DialerScreen(
                             if (ContextCompat.checkSelfPermission(context, Manifest.permission.CALL_PHONE) == PackageManager.PERMISSION_GRANTED) {
                                 val prefs = context.getSharedPreferences("velstrack_prefs", Context.MODE_PRIVATE)
                                 prefs.edit()
-                                    .putString("pending_call_number", phoneNumber)
-                                    .putLong("pending_call_time", System.currentTimeMillis() - 5000) // 5 seconds buffer
+                                    .putLong("pending_call_time", System.currentTimeMillis())
                                     .apply()
-                                val intent = Intent(Intent.ACTION_CALL, Uri.parse("tel:$phoneNumber"))
-                                context.startActivity(intent)
-                                onCallEnded()
+                                
+                                onNavigateToActiveCall(phoneNumber)
                             } else {
                                 permissionLauncher.launch(Manifest.permission.CALL_PHONE)
                             }

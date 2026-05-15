@@ -187,4 +187,37 @@ class EmployeeDashboardViewModel @Inject constructor(
         // After synchronous sync, reload dashboard
         loadDashboard()
     }
+
+    fun logManualCallSession(phoneNumber: String, durationSeconds: Int) {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val employeeId = sessionManager.getUserId().firstOrNull() ?: "UNKNOWN_EMP"
+                val date = System.currentTimeMillis()
+                val normalizedDbNumber = phoneNumber.replace(Regex("[^0-9+]"), "")
+
+                val rawFingerprint = "${employeeId}${normalizedDbNumber}${date}${durationSeconds}"
+                val digest = java.security.MessageDigest.getInstance("SHA-256")
+                val hashBytes = digest.digest(rawFingerprint.toByteArray(Charsets.UTF_8))
+                val fingerprint = hashBytes.joinToString("") { "%02x".format(it) }
+
+                val id = "${hashPhoneNumber(phoneNumber)}_${date}"
+                val matchedCall = CallEntity(
+                    id = id,
+                    callFingerprint = fingerprint,
+                    clientPhoneHash = hashPhoneNumber(phoneNumber),
+                    durationSeconds = durationSeconds,
+                    callType = "OUTGOING",
+                    timestamp = date,
+                    isSynced = false
+                )
+
+                callDao.insertCalls(listOf(matchedCall))
+                
+                // Immediately sync the call and load dashboard
+                syncCallsNowAndLoad()
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
 }
