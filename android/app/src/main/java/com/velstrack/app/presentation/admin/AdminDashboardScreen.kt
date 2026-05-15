@@ -24,44 +24,16 @@ import com.velstrack.app.core.util.UiState
 import com.velstrack.app.presentation.auth.AuthViewModel
 import com.velstrack.app.presentation.components.*
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AdminDashboardScreen(
-    onLogout: () -> Unit,
-    onManageEmployees: () -> Unit,
-    onMetaAnalytics: () -> Unit,
-    viewModel: AdminViewModel = hiltViewModel(),
-    authViewModel: AuthViewModel = hiltViewModel()
+fun AdminOverviewTab(
+    viewModel: AdminViewModel
 ) {
     val dashboardState by viewModel.dashboardState.collectAsState()
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Admin Control", fontWeight = FontWeight.Bold) },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = DeepSpaceBlack,
-                    titleContentColor = MaterialTheme.colorScheme.onSurface,
-                    actionIconContentColor = RoseDanger
-                ),
-                actions = {
-                    IconButton(onClick = {
-                        authViewModel.logout()
-                        onLogout()
-                    }) {
-                        Icon(imageVector = Icons.Default.ExitToApp, contentDescription = "Logout")
-                    }
-                }
-            )
-        }
-    ) { paddingValues ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(DeepSpaceBlack)
-                .padding(paddingValues)
-        ) {
-            when (dashboardState) {
+    Box(
+        modifier = Modifier.fillMaxSize()
+    ) {
+        when (dashboardState) {
                 is UiState.Loading -> {
                     CircularProgressIndicator(
                         modifier = Modifier.align(Alignment.Center),
@@ -153,20 +125,18 @@ fun AdminDashboardScreen(
                         }
 
                         item {
-                            SectionHeader(title = "Team Management", actionText = "Manage", onActionClick = onManageEmployees)
+                            SectionHeader(title = "Team Management")
                             Spacer(modifier = Modifier.height(16.dp))
-                            InsightBanner(message = "Manage employee access, track performance, and view call histories.")
+                            InsightBanner(message = "Manage employee access, track performance, and view call histories in the Team tab.")
                         }
 
                         item {
-                            SectionHeader(title = "Meta Analytics", actionText = "View Dashboard", onActionClick = onMetaAnalytics)
+                            SectionHeader(title = "Meta Analytics")
                             Spacer(modifier = Modifier.height(16.dp))
-                            InsightBanner(message = "Meta Ads reporting requires campaign tracking access. Go to manage to link accounts.")
+                            InsightBanner(message = "Meta Ads reporting requires campaign tracking access. Check the Campaigns tab.")
                         }
                     }
                 }
-                else -> Unit
-            }
         }
     }
 }

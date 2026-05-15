@@ -6,6 +6,9 @@ import com.velstrack.app.core.util.UiState
 import com.velstrack.app.data.remote.dto.AdminDashboardDto
 import com.velstrack.app.data.remote.dto.EmployeeDto
 import com.velstrack.app.data.remote.dto.MetaCampaignDto
+import com.velstrack.app.data.remote.dto.AnalyticsDto
+import com.velstrack.app.data.remote.dto.TargetDto
+import com.velstrack.app.data.remote.dto.MetaStatusDto
 import com.velstrack.app.domain.repository.AdminRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -26,6 +29,15 @@ class AdminViewModel @Inject constructor(
 
     private val _metaState = MutableStateFlow<UiState<List<MetaCampaignDto>>>(UiState.Loading)
     val metaState: StateFlow<UiState<List<MetaCampaignDto>>> = _metaState
+
+    private val _metaStatusState = MutableStateFlow<UiState<MetaStatusDto>>(UiState.Loading)
+    val metaStatusState: StateFlow<UiState<MetaStatusDto>> = _metaStatusState
+
+    private val _targetsState = MutableStateFlow<UiState<List<TargetDto>>>(UiState.Loading)
+    val targetsState: StateFlow<UiState<List<TargetDto>>> = _targetsState
+
+    private val _analyticsState = MutableStateFlow<UiState<AnalyticsDto>>(UiState.Loading)
+    val analyticsState: StateFlow<UiState<AnalyticsDto>> = _analyticsState
 
     init {
         loadDashboard()
@@ -75,6 +87,50 @@ class AdminViewModel @Inject constructor(
                     }
                 } else {
                     _metaState.value = UiState.Error(result.exceptionOrNull()?.message ?: "Unknown error")
+                }
+            }
+        }
+    }
+
+    fun loadMetaStatus() {
+        _metaStatusState.value = UiState.Loading
+        viewModelScope.launch {
+            repository.getMetaStatus().collect { result ->
+                if (result.isSuccess) {
+                    _metaStatusState.value = UiState.Success(result.getOrNull()!!)
+                } else {
+                    _metaStatusState.value = UiState.Error(result.exceptionOrNull()?.message ?: "Unknown error")
+                }
+            }
+        }
+    }
+
+    fun loadTargets() {
+        _targetsState.value = UiState.Loading
+        viewModelScope.launch {
+            repository.getTargets().collect { result ->
+                if (result.isSuccess) {
+                    val list = result.getOrNull()!!
+                    if (list.isEmpty()) {
+                        _targetsState.value = UiState.Empty
+                    } else {
+                        _targetsState.value = UiState.Success(list)
+                    }
+                } else {
+                    _targetsState.value = UiState.Error(result.exceptionOrNull()?.message ?: "Unknown error")
+                }
+            }
+        }
+    }
+
+    fun loadAnalytics() {
+        _analyticsState.value = UiState.Loading
+        viewModelScope.launch {
+            repository.getAnalytics().collect { result ->
+                if (result.isSuccess) {
+                    _analyticsState.value = UiState.Success(result.getOrNull()!!)
+                } else {
+                    _analyticsState.value = UiState.Error(result.exceptionOrNull()?.message ?: "Unknown error")
                 }
             }
         }

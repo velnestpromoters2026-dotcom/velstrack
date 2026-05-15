@@ -8,10 +8,8 @@ import com.velstrack.app.presentation.auth.LoginScreen
 import com.velstrack.app.presentation.splash.SplashScreen
 import com.velstrack.app.presentation.employee.EmployeeDashboardScreen
 import com.velstrack.app.presentation.employee.dialer.DialerScreen
-import com.velstrack.app.presentation.admin.AdminDashboardScreen
-import com.velstrack.app.presentation.admin.employee.EmployeeListScreen
+import com.velstrack.app.presentation.admin.AdminMainScreen
 import com.velstrack.app.presentation.admin.employee.AddEmployeeScreen
-import com.velstrack.app.presentation.admin.meta.MetaDashboardScreen
 
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -87,32 +85,15 @@ fun RootNavGraph() {
         }
 
         composable("admin_dashboard") {
-            AdminDashboardScreen(
+            AdminMainScreen(
                 onLogout = {
                     navController.navigate("login") {
                         popUpTo(0) { inclusive = true }
                     }
                 },
-                onManageEmployees = {
-                    navController.navigate("employee_list")
-                },
-                onMetaAnalytics = {
-                    navController.navigate("meta_dashboard")
+                onNavigateToAddEmployee = {
+                    navController.navigate("add_employee")
                 }
-            )
-        }
-
-        composable("meta_dashboard") {
-            MetaDashboardScreen(
-                onBack = { navController.popBackStack() }
-            )
-        }
-
-        composable("employee_list") {
-            EmployeeListScreen(
-                onBack = { navController.popBackStack() },
-                onAddEmployee = { navController.navigate("add_employee") },
-                onEmployeeClick = { id -> /* TODO: Detail screen */ }
             )
         }
 
