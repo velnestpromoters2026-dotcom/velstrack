@@ -172,7 +172,8 @@ class EmployeeDashboardViewModel @Inject constructor(
                             durationSeconds = it.durationSeconds,
                             callType = it.callType,
                             timestamp = it.timestamp,
-                            callFingerprint = it.callFingerprint
+                            callFingerprint = it.callFingerprint,
+                            isVelstrackCall = true
                         )
                     }
 

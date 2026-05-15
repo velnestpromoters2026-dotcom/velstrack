@@ -85,27 +85,31 @@ fun EmployeeDashboardScreen(
     val lifecycleOwner = LocalLifecycleOwner.current
     val currentViewModel by rememberUpdatedState(viewModel)
     
-    // Check for completed calls securely every time screen is RESUMED
-    val lifecycleState by lifecycleOwner.lifecycle.currentStateFlow.collectAsState()
-    
-    LaunchedEffect(lifecycleState) {
-        if (lifecycleState == androidx.lifecycle.Lifecycle.State.RESUMED) {
-            val prefs = context.getSharedPreferences("velstrack_prefs", android.content.Context.MODE_PRIVATE)
-            val callDuration = prefs.getInt("completed_call_duration", -1)
-            val callNumber = prefs.getString("completed_call_number", null)
-            
-            if (callDuration != -1 && callNumber != null) {
-                currentViewModel.logManualCallSession(callNumber, callDuration)
-                prefs.edit()
-                    .remove("completed_call_duration")
-                    .remove("completed_call_number")
-                    .apply()
-            } else if (hasPermission) {
-                currentViewModel.startCallSyncWorker()
-                coroutineScope.launch {
-                    currentViewModel.syncCallsNowAndLoad()
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == androidx.lifecycle.Lifecycle.Event.ON_RESUME) {
+                // Check if a call just completed securely every time screen is RESUMED
+                val prefs = context.getSharedPreferences("velstrack_prefs", android.content.Context.MODE_PRIVATE)
+                val callDuration = prefs.getInt("completed_call_duration", -1)
+                val callNumber = prefs.getString("completed_call_number", null)
+                
+                if (callDuration != -1 && callNumber != null) {
+                    currentViewModel.logManualCallSession(callNumber, callDuration)
+                    prefs.edit()
+                        .remove("completed_call_duration")
+                        .remove("completed_call_number")
+                        .apply()
+                } else if (hasPermission) {
+                    currentViewModel.startCallSyncWorker()
+                    coroutineScope.launch {
+                        currentViewModel.syncCallsNowAndLoad()
+                    }
                 }
             }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
         }
     }
     
