@@ -22,6 +22,12 @@ import com.velstrack.app.core.datastore.SessionManager
 fun RootNavGraph() {
     val navController = rememberNavController()
 
+    androidx.compose.runtime.LaunchedEffect(Unit) {
+        com.velstrack.app.MainActivity.callActionFlow.collect { number ->
+            navController.navigate("active_call/$number")
+        }
+    }
+
     NavHost(navController = navController, startDestination = "splash") {
         composable("splash") {
             val context = LocalContext.current

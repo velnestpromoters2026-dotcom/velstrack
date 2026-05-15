@@ -41,9 +41,10 @@ import androidx.compose.ui.text.TextRange
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import android.app.role.RoleManager
+import android.os.Build
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -59,12 +60,24 @@ fun DialerScreen(
         contract = ActivityResultContracts.RequestPermission()
     ) { isGranted ->
         if (isGranted && phoneNumber.isNotEmpty()) {
-            val prefs = context.getSharedPreferences("velstrack_prefs", Context.MODE_PRIVATE)
-            prefs.edit()
-                .putLong("pending_call_time", System.currentTimeMillis())
-                .apply()
-            
-            onNavigateToActiveCall(phoneNumber)
+            val intent = Intent(Intent.ACTION_CALL, Uri.parse("tel:$phoneNumber"))
+            context.startActivity(intent)
+        }
+    }
+
+    val roleLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        // Whether granted or not, we continue.
+    }
+
+    LaunchedEffect(Unit) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            val roleManager = context.getSystemService(Context.ROLE_SERVICE) as RoleManager
+            if (!roleManager.isRoleHeld(RoleManager.ROLE_DIALER)) {
+                val intent = roleManager.createRequestRoleIntent(RoleManager.ROLE_DIALER)
+                roleLauncher.launch(intent)
+            }
         }
     }
 
@@ -267,12 +280,8 @@ fun DialerScreen(
                     onClick = {
                         if (phoneNumber.isNotEmpty()) {
                             if (ContextCompat.checkSelfPermission(context, Manifest.permission.CALL_PHONE) == PackageManager.PERMISSION_GRANTED) {
-                                val prefs = context.getSharedPreferences("velstrack_prefs", Context.MODE_PRIVATE)
-                                prefs.edit()
-                                    .putLong("pending_call_time", System.currentTimeMillis())
-                                    .apply()
-                                
-                                onNavigateToActiveCall(phoneNumber)
+                                val intent = Intent(Intent.ACTION_CALL, Uri.parse("tel:$phoneNumber"))
+                                context.startActivity(intent)
                             } else {
                                 permissionLauncher.launch(Manifest.permission.CALL_PHONE)
                             }

@@ -17,6 +17,8 @@ import androidx.compose.ui.unit.sp
 import com.velstrack.app.core.theme.DeepSpaceBlack
 import com.velstrack.app.core.theme.NeonCyan
 import com.velstrack.app.core.theme.RoseDanger
+import com.velstrack.app.presentation.employee.dialer.service.CallManager
+import android.telecom.Call
 import kotlinx.coroutines.delay
 
 @Composable
@@ -25,19 +27,34 @@ fun ActiveCallScreen(
     onCallEnded: (durationSeconds: Int) -> Unit
 ) {
     var durationSeconds by remember { mutableStateOf(0) }
-    var isMuted by remember { mutableStateOf(false) }
-    var isSpeakerOn by remember { mutableStateOf(false) }
+    val callStateInt by CallManager.callStateInt.collectAsState()
 
-    LaunchedEffect(Unit) {
-        while (true) {
-            delay(1000)
-            durationSeconds++
+    LaunchedEffect(callStateInt) {
+        if (callStateInt == Call.STATE_DISCONNECTED) {
+            onCallEnded(durationSeconds)
+        }
+    }
+
+    LaunchedEffect(callStateInt) {
+        if (callStateInt == Call.STATE_ACTIVE) {
+            while (true) {
+                delay(1000)
+                durationSeconds++
+            }
         }
     }
 
     val minutes = durationSeconds / 60
     val seconds = durationSeconds % 60
     val timeString = String.format("%02d:%02d", minutes, seconds)
+    
+    val statusText = when (callStateInt) {
+        Call.STATE_DIALING -> "Dialing..."
+        Call.STATE_RINGING -> "Ringing..."
+        Call.STATE_ACTIVE -> "Connected"
+        Call.STATE_DISCONNECTED -> "Call Ended"
+        else -> "Connecting..."
+    }
 
     Column(
         modifier = Modifier
@@ -52,7 +69,7 @@ fun ActiveCallScreen(
             modifier = Modifier.padding(top = 64.dp)
         ) {
             Text(
-                text = "Calling...",
+                text = statusText,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 style = MaterialTheme.typography.titleMedium
             )
@@ -79,7 +96,9 @@ fun ActiveCallScreen(
         ) {
             // End Call
             FloatingActionButton(
-                onClick = { onCallEnded(durationSeconds) },
+                onClick = { 
+                    CallManager.endCall() 
+                },
                 containerColor = RoseDanger,
                 contentColor = DeepSpaceBlack,
                 modifier = Modifier.size(80.dp),
