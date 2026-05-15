@@ -4,10 +4,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.CallEnd
-import androidx.compose.material.icons.filled.Mic
-import androidx.compose.material.icons.filled.MicOff
-import androidx.compose.material.icons.filled.VolumeUp
+import androidx.compose.material.icons.filled.Call
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -79,22 +77,6 @@ fun ActiveCallScreen(
             horizontalArrangement = Arrangement.SpaceEvenly,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Mute
-            IconButton(
-                onClick = { isMuted = !isMuted },
-                modifier = Modifier
-                    .size(64.dp)
-                    .clip(CircleShape)
-                    .background(if (isMuted) MaterialTheme.colorScheme.surfaceVariant else DeepSpaceBlack)
-            ) {
-                Icon(
-                    imageVector = if (isMuted) Icons.Default.MicOff else Icons.Default.Mic,
-                    contentDescription = "Mute",
-                    tint = MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier.size(32.dp)
-                )
-            }
-
             // End Call
             FloatingActionButton(
                 onClick = { onCallEnded(durationSeconds) },
@@ -104,25 +86,9 @@ fun ActiveCallScreen(
                 shape = CircleShape
             ) {
                 Icon(
-                    imageVector = Icons.Default.CallEnd,
+                    imageVector = Icons.Default.Clear,
                     contentDescription = "End Call",
                     modifier = Modifier.size(40.dp)
-                )
-            }
-
-            // Speaker
-            IconButton(
-                onClick = { isSpeakerOn = !isSpeakerOn },
-                modifier = Modifier
-                    .size(64.dp)
-                    .clip(CircleShape)
-                    .background(if (isSpeakerOn) MaterialTheme.colorScheme.surfaceVariant else DeepSpaceBlack)
-            ) {
-                Icon(
-                    imageVector = Icons.Default.VolumeUp,
-                    contentDescription = "Speaker",
-                    tint = MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier.size(32.dp)
                 )
             }
         }
