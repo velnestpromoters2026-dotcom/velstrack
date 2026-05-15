@@ -95,10 +95,10 @@ fun RootNavGraph() {
 
         composable("active_call/{number}") { backStackEntry ->
             val number = backStackEntry.arguments?.getString("number") ?: "Unknown"
+            val context = androidx.compose.ui.platform.LocalContext.current
             ActiveCallScreen(
                 phoneNumber = number,
                 onCallEnded = { durationSeconds ->
-                    val context = androidx.compose.ui.platform.LocalContext.current
                     val prefs = context.getSharedPreferences("velstrack_prefs", android.content.Context.MODE_PRIVATE)
                     prefs.edit()
                         .putInt("completed_call_duration", durationSeconds)

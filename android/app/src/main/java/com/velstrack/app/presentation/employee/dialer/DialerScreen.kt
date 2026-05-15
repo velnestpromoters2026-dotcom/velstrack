@@ -61,6 +61,12 @@ fun DialerScreen(
         contract = ActivityResultContracts.RequestPermission()
     ) { isGranted ->
         if (isGranted && phoneNumber.isNotEmpty()) {
+            val prefs = context.getSharedPreferences("velstrack_prefs", Context.MODE_PRIVATE)
+            prefs.edit()
+                .putString("pending_call_number", phoneNumber)
+                .putLong("pending_call_time", System.currentTimeMillis())
+                .apply()
+                
             val intent = Intent(Intent.ACTION_CALL, Uri.parse("tel:$phoneNumber"))
             context.startActivity(intent)
         }
@@ -281,6 +287,12 @@ fun DialerScreen(
                     onClick = {
                         if (phoneNumber.isNotEmpty()) {
                             if (ContextCompat.checkSelfPermission(context, Manifest.permission.CALL_PHONE) == PackageManager.PERMISSION_GRANTED) {
+                                val prefs = context.getSharedPreferences("velstrack_prefs", Context.MODE_PRIVATE)
+                                prefs.edit()
+                                    .putString("pending_call_number", phoneNumber)
+                                    .putLong("pending_call_time", System.currentTimeMillis())
+                                    .apply()
+
                                 val intent = Intent(Intent.ACTION_CALL, Uri.parse("tel:$phoneNumber"))
                                 context.startActivity(intent)
                             } else {
