@@ -13,16 +13,38 @@ import com.velstrack.app.presentation.admin.employee.EmployeeListScreen
 import com.velstrack.app.presentation.admin.employee.AddEmployeeScreen
 import com.velstrack.app.presentation.admin.meta.MetaDashboardScreen
 
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.ui.platform.LocalContext
+import com.velstrack.app.core.datastore.SessionManager
+
 @Composable
 fun RootNavGraph() {
     val navController = rememberNavController()
 
     NavHost(navController = navController, startDestination = "splash") {
         composable("splash") {
+            val context = LocalContext.current
+            val sessionManager = remember { SessionManager(context.applicationContext) }
+            val role by sessionManager.getUserRole().collectAsState(initial = null)
+            val token by sessionManager.getJwtToken().collectAsState(initial = null)
+
             SplashScreen(onSplashFinished = {
-                // Future: Check SessionManager for existing token
-                navController.navigate("login") {
-                    popUpTo("splash") { inclusive = true }
+                if (!token.isNullOrEmpty() && !role.isNullOrEmpty()) {
+                    if (role == "EMPLOYEE") {
+                        navController.navigate("employee_dashboard") {
+                            popUpTo("splash") { inclusive = true }
+                        }
+                    } else {
+                        navController.navigate("admin_dashboard") {
+                            popUpTo("splash") { inclusive = true }
+                        }
+                    }
+                } else {
+                    navController.navigate("login") {
+                        popUpTo("splash") { inclusive = true }
+                    }
                 }
             })
         }
