@@ -18,6 +18,7 @@ import java.lang.Override;
 import java.lang.String;
 import java.lang.SuppressWarnings;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -36,9 +37,10 @@ public final class VelstrackDatabase_Impl extends VelstrackDatabase {
     final SupportSQLiteOpenHelper.Callback _openCallback = new RoomOpenHelper(config, new RoomOpenHelper.Delegate(1) {
       @Override
       public void createAllTables(@NonNull final SupportSQLiteDatabase db) {
-        db.execSQL("CREATE TABLE IF NOT EXISTS `calls` (`id` TEXT NOT NULL, `clientPhoneHash` TEXT NOT NULL, `durationSeconds` INTEGER NOT NULL, `callType` TEXT NOT NULL, `timestamp` INTEGER NOT NULL, `isSynced` INTEGER NOT NULL, PRIMARY KEY(`id`))");
+        db.execSQL("CREATE TABLE IF NOT EXISTS `calls` (`id` TEXT NOT NULL, `callFingerprint` TEXT NOT NULL, `clientPhoneHash` TEXT NOT NULL, `durationSeconds` INTEGER NOT NULL, `callType` TEXT NOT NULL, `timestamp` INTEGER NOT NULL, `isSynced` INTEGER NOT NULL, PRIMARY KEY(`id`))");
+        db.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS `index_calls_callFingerprint` ON `calls` (`callFingerprint`)");
         db.execSQL("CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)");
-        db.execSQL("INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '202fd4c4c6945129586402be074b0c35')");
+        db.execSQL("INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '4a8b5d2f1e75ef315fc3d6dca3159d46')");
       }
 
       @Override
@@ -87,15 +89,17 @@ public final class VelstrackDatabase_Impl extends VelstrackDatabase {
       @NonNull
       public RoomOpenHelper.ValidationResult onValidateSchema(
           @NonNull final SupportSQLiteDatabase db) {
-        final HashMap<String, TableInfo.Column> _columnsCalls = new HashMap<String, TableInfo.Column>(6);
+        final HashMap<String, TableInfo.Column> _columnsCalls = new HashMap<String, TableInfo.Column>(7);
         _columnsCalls.put("id", new TableInfo.Column("id", "TEXT", true, 1, null, TableInfo.CREATED_FROM_ENTITY));
+        _columnsCalls.put("callFingerprint", new TableInfo.Column("callFingerprint", "TEXT", true, 0, null, TableInfo.CREATED_FROM_ENTITY));
         _columnsCalls.put("clientPhoneHash", new TableInfo.Column("clientPhoneHash", "TEXT", true, 0, null, TableInfo.CREATED_FROM_ENTITY));
         _columnsCalls.put("durationSeconds", new TableInfo.Column("durationSeconds", "INTEGER", true, 0, null, TableInfo.CREATED_FROM_ENTITY));
         _columnsCalls.put("callType", new TableInfo.Column("callType", "TEXT", true, 0, null, TableInfo.CREATED_FROM_ENTITY));
         _columnsCalls.put("timestamp", new TableInfo.Column("timestamp", "INTEGER", true, 0, null, TableInfo.CREATED_FROM_ENTITY));
         _columnsCalls.put("isSynced", new TableInfo.Column("isSynced", "INTEGER", true, 0, null, TableInfo.CREATED_FROM_ENTITY));
         final HashSet<TableInfo.ForeignKey> _foreignKeysCalls = new HashSet<TableInfo.ForeignKey>(0);
-        final HashSet<TableInfo.Index> _indicesCalls = new HashSet<TableInfo.Index>(0);
+        final HashSet<TableInfo.Index> _indicesCalls = new HashSet<TableInfo.Index>(1);
+        _indicesCalls.add(new TableInfo.Index("index_calls_callFingerprint", true, Arrays.asList("callFingerprint"), Arrays.asList("ASC")));
         final TableInfo _infoCalls = new TableInfo("calls", _columnsCalls, _foreignKeysCalls, _indicesCalls);
         final TableInfo _existingCalls = TableInfo.read(db, "calls");
         if (!_infoCalls.equals(_existingCalls)) {
@@ -105,7 +109,7 @@ public final class VelstrackDatabase_Impl extends VelstrackDatabase {
         }
         return new RoomOpenHelper.ValidationResult(true, null);
       }
-    }, "202fd4c4c6945129586402be074b0c35", "3c3178cb4476542ae6991f7d5c91fb5b");
+    }, "4a8b5d2f1e75ef315fc3d6dca3159d46", "c28959c4d2e412405e78ea747069dd69");
     final SupportSQLiteOpenHelper.Configuration _sqliteConfig = SupportSQLiteOpenHelper.Configuration.builder(config.context).name(config.name).callback(_openCallback).build();
     final SupportSQLiteOpenHelper _helper = config.sqliteOpenHelperFactory.create(_sqliteConfig);
     return _helper;

@@ -48,7 +48,8 @@ class SyncCallWorker @AssistedInject constructor(
                     clientPhoneHash = it.clientPhoneHash,
                     durationSeconds = it.durationSeconds,
                     callType = it.callType,
-                    timestamp = it.timestamp
+                    timestamp = it.timestamp,
+                    callFingerprint = it.callFingerprint
                 )
             }
 

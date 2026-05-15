@@ -43,19 +43,20 @@ public final class CallDao_AppDatabase_Impl implements CallDao {
       @Override
       @NonNull
       protected String createQuery() {
-        return "INSERT OR IGNORE INTO `calls` (`id`,`clientPhoneHash`,`durationSeconds`,`callType`,`timestamp`,`isSynced`) VALUES (?,?,?,?,?,?)";
+        return "INSERT OR IGNORE INTO `calls` (`id`,`callFingerprint`,`clientPhoneHash`,`durationSeconds`,`callType`,`timestamp`,`isSynced`) VALUES (?,?,?,?,?,?,?)";
       }
 
       @Override
       protected void bind(@NonNull final SupportSQLiteStatement statement,
           @NonNull final CallEntity entity) {
         statement.bindString(1, entity.getId());
-        statement.bindString(2, entity.getClientPhoneHash());
-        statement.bindLong(3, entity.getDurationSeconds());
-        statement.bindString(4, entity.getCallType());
-        statement.bindLong(5, entity.getTimestamp());
+        statement.bindString(2, entity.getCallFingerprint());
+        statement.bindString(3, entity.getClientPhoneHash());
+        statement.bindLong(4, entity.getDurationSeconds());
+        statement.bindString(5, entity.getCallType());
+        statement.bindLong(6, entity.getTimestamp());
         final int _tmp = entity.isSynced() ? 1 : 0;
-        statement.bindLong(6, _tmp);
+        statement.bindLong(7, _tmp);
       }
     };
   }
@@ -91,6 +92,7 @@ public final class CallDao_AppDatabase_Impl implements CallDao {
         final Cursor _cursor = DBUtil.query(__db, _statement, false, null);
         try {
           final int _cursorIndexOfId = CursorUtil.getColumnIndexOrThrow(_cursor, "id");
+          final int _cursorIndexOfCallFingerprint = CursorUtil.getColumnIndexOrThrow(_cursor, "callFingerprint");
           final int _cursorIndexOfClientPhoneHash = CursorUtil.getColumnIndexOrThrow(_cursor, "clientPhoneHash");
           final int _cursorIndexOfDurationSeconds = CursorUtil.getColumnIndexOrThrow(_cursor, "durationSeconds");
           final int _cursorIndexOfCallType = CursorUtil.getColumnIndexOrThrow(_cursor, "callType");
@@ -101,6 +103,8 @@ public final class CallDao_AppDatabase_Impl implements CallDao {
             final CallEntity _item;
             final String _tmpId;
             _tmpId = _cursor.getString(_cursorIndexOfId);
+            final String _tmpCallFingerprint;
+            _tmpCallFingerprint = _cursor.getString(_cursorIndexOfCallFingerprint);
             final String _tmpClientPhoneHash;
             _tmpClientPhoneHash = _cursor.getString(_cursorIndexOfClientPhoneHash);
             final int _tmpDurationSeconds;
@@ -113,7 +117,7 @@ public final class CallDao_AppDatabase_Impl implements CallDao {
             final int _tmp;
             _tmp = _cursor.getInt(_cursorIndexOfIsSynced);
             _tmpIsSynced = _tmp != 0;
-            _item = new CallEntity(_tmpId,_tmpClientPhoneHash,_tmpDurationSeconds,_tmpCallType,_tmpTimestamp,_tmpIsSynced);
+            _item = new CallEntity(_tmpId,_tmpCallFingerprint,_tmpClientPhoneHash,_tmpDurationSeconds,_tmpCallType,_tmpTimestamp,_tmpIsSynced);
             _result.add(_item);
           }
           return _result;
