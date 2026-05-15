@@ -36,7 +36,7 @@ class AuthViewModel @Inject constructor(
                     val apiResponse = response.body()
                     if (apiResponse != null && apiResponse.success && apiResponse.data != null) {
                         val body = apiResponse.data
-                        sessionManager.saveSession(body.token, body.role)
+                        sessionManager.saveSession(body.token, body.role, body._id)
                         _loginState.value = LoginState.Success(body.role)
                     } else {
                         _loginState.value = LoginState.Error(apiResponse?.message ?: "Login failed")

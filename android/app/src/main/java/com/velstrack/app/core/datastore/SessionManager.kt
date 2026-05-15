@@ -20,12 +20,14 @@ class SessionManager @Inject constructor(@ApplicationContext private val context
     companion object {
         private val JWT_TOKEN = stringPreferencesKey("jwt_token")
         private val USER_ROLE = stringPreferencesKey("user_role")
+        private val USER_ID = stringPreferencesKey("user_id")
     }
 
-    suspend fun saveSession(token: String, role: String) {
+    suspend fun saveSession(token: String, role: String, userId: String) {
         context.dataStore.edit { preferences ->
             preferences[JWT_TOKEN] = token
             preferences[USER_ROLE] = role
+            preferences[USER_ID] = userId
         }
     }
 
@@ -38,6 +40,12 @@ class SessionManager @Inject constructor(@ApplicationContext private val context
     fun getUserRole(): Flow<String?> {
         return context.dataStore.data.map { preferences ->
             preferences[USER_ROLE]
+        }
+    }
+
+    fun getUserId(): Flow<String?> {
+        return context.dataStore.data.map { preferences ->
+            preferences[USER_ID]
         }
     }
 

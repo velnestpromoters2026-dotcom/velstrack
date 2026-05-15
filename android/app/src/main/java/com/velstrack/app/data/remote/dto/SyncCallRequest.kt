@@ -9,5 +9,6 @@ data class SyncCallDto(
     val durationSeconds: Int,
     val callType: String,
     val timestamp: Long,
+    val callFingerprint: String,
     val isVelstrackCall: Boolean = true
 )

@@ -12,6 +12,7 @@ import com.velstrack.app.domain.usecase.SyncCallWorker
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -23,6 +24,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import com.velstrack.app.data.local.dao.CallDao
 import com.velstrack.app.data.local.entity.CallEntity
 import com.velstrack.app.data.remote.api.ApiService
+import com.velstrack.app.core.datastore.SessionManager
 import com.velstrack.app.data.remote.dto.SyncCallDto
 import com.velstrack.app.data.remote.dto.SyncCallRequest
 import java.security.MessageDigest
@@ -34,6 +36,7 @@ class EmployeeDashboardViewModel @Inject constructor(
     private val workManager: WorkManager,
     private val callDao: CallDao,
     private val apiService: ApiService,
+    private val sessionManager: SessionManager,
     @ApplicationContext private val context: Context
 ) : ViewModel() {
 
@@ -71,7 +74,7 @@ class EmployeeDashboardViewModel @Inject constructor(
         val immediateRequest = androidx.work.OneTimeWorkRequestBuilder<SyncCallWorker>().build()
         workManager.enqueueUniqueWork(
             "CallSyncWorker_Immediate",
-            androidx.work.ExistingWorkPolicy.REPLACE,
+            androidx.work.ExistingWorkPolicy.KEEP,
             immediateRequest
         )
     }
@@ -127,10 +130,18 @@ class EmployeeDashboardViewModel @Inject constructor(
                                     else -> "UNKNOWN"
                                 }
 
-                                if (typeStr == "OUTGOING") {
+                                if (typeStr == "OUTGOING" && duration >= 2) {
+                                    val employeeId = sessionManager.getUserId().firstOrNull() ?: "UNKNOWN_EMP"
+                                    
+                                    val rawFingerprint = "${employeeId}${normalizedDbNumber}${date}${duration}"
+                                    val digest = MessageDigest.getInstance("SHA-256")
+                                    val hashBytes = digest.digest(rawFingerprint.toByteArray(Charsets.UTF_8))
+                                    val fingerprint = hashBytes.joinToString("") { "%02x".format(it) }
+
                                     val id = "${hashPhoneNumber(number)}_${date}"
                                     matchedCall = CallEntity(
                                         id = id,
+                                        callFingerprint = fingerprint,
                                         clientPhoneHash = hashPhoneNumber(number),
                                         durationSeconds = duration,
                                         callType = typeStr,
@@ -158,7 +169,8 @@ class EmployeeDashboardViewModel @Inject constructor(
                             clientPhoneHash = it.clientPhoneHash,
                             durationSeconds = it.durationSeconds,
                             callType = it.callType,
-                            timestamp = it.timestamp
+                            timestamp = it.timestamp,
+                            callFingerprint = it.callFingerprint
                         )
                     }
 

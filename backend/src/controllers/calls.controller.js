@@ -21,15 +21,24 @@ export const syncCalls = async (req, res) => {
             durationSeconds: call.durationSeconds,
             callType: call.callType,
             timestamp: new Date(call.timestamp),
+            callFingerprint: call.callFingerprint,
             isVelstrackCall: true,
             syncStatus: 'SYNCED'
         }));
 
-        await CallLog.insertMany(formattedCalls);
+        try {
+            await CallLog.insertMany(formattedCalls, { ordered: false });
+        } catch (insertError) {
+            // Error code 11000 is duplicate key (fingerprint collision)
+            // If it's only duplicate key errors, we still consider the sync a success
+            if (insertError.code !== 11000 && !insertError.message.includes('11000')) {
+                throw insertError;
+            }
+        }
         
         res.status(201).json({ 
             success: true, 
-            message: 'Calls synced successfully', 
+            message: 'Calls synced successfully (duplicates ignored)', 
             data: { syncedCount: formattedCalls.length } 
         });
     } catch (error) {

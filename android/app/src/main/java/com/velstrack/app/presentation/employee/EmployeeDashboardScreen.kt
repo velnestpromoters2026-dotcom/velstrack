@@ -91,7 +91,7 @@ fun EmployeeDashboardScreen(
                 if (hasPermission) {
                     currentViewModel.startCallSyncWorker()
                     coroutineScope.launch {
-                        delay(1000) // Give Android 1 second to log the call
+                        delay(3000) // Give Android 3 seconds to log the call safely
                         currentViewModel.syncCallsNowAndLoad()
                     }
                 }
