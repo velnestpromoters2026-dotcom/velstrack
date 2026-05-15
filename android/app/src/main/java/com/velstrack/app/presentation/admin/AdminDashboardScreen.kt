@@ -141,9 +141,10 @@ fun AdminDashboardScreen(
                                         items = data.recentActivity.mapIndexed { index, activity ->
                                             TimelineItem(
                                                 title = activity.type,
-                                                subtitle = activity.description,
                                                 time = activity.timestamp,
-                                                isHighlighted = index == 0
+                                                duration = activity.description,
+                                                isHighlighted = index == 0,
+                                                isSynced = false
                                             )
                                         }
                                     )
