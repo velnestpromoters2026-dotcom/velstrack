@@ -176,17 +176,39 @@ export const createTarget = async (req, res) => {
     try {
         const { employeeId, targetType, targetValue, periodStart, periodEnd } = req.body;
         
-        const target = await Target.create({
-            employeeId,
-            targetType,
-            targetValue,
-            achievedValue: 0,
-            periodStart: new Date(periodStart),
-            periodEnd: new Date(periodEnd),
-            status: 'ACTIVE'
-        });
+        if (employeeId === 'TEAM') {
+            const employees = await User.find({ role: 'EMPLOYEE' });
+            if (employees.length === 0) {
+                return res.status(400).json({ success: false, message: 'No employees found to assign targets.' });
+            }
+            
+            const dividedTarget = Math.floor(targetValue / employees.length);
+            
+            const targetsToCreate = employees.map(emp => ({
+                employeeId: emp._id,
+                targetType,
+                targetValue: dividedTarget,
+                achievedValue: 0,
+                periodStart: new Date(periodStart),
+                periodEnd: new Date(periodEnd),
+                status: 'ACTIVE'
+            }));
+            
+            await Target.insertMany(targetsToCreate);
+            return res.status(201).json({ success: true, message: `Targets created and divided seamlessly among ${employees.length} employees.` });
+        } else {
+            const target = await Target.create({
+                employeeId,
+                targetType,
+                targetValue,
+                achievedValue: 0,
+                periodStart: new Date(periodStart),
+                periodEnd: new Date(periodEnd),
+                status: 'ACTIVE'
+            });
 
-        res.status(201).json({ success: true, message: "Target created", data: target });
+            return res.status(201).json({ success: true, message: "Target created", data: target });
+        }
     } catch (error) {
         res.status(500).json({ success: false, message: 'Failed to create target: ' + error.message });
     }
@@ -214,7 +236,17 @@ export const getAnalytics = async (req, res) => {
             { date: 'Fri', calls: 48 }
         ];
 
-        const employeeRanking = await User.find({ role: 'EMPLOYEE' }).select('profile email');
+        let employeeRanking = await User.find({ role: 'EMPLOYEE' }).select('profile email');
+        
+        // If no employees exist in DB, provide completely fake data so the chart isn't empty
+        if (employeeRanking.length === 0) {
+            employeeRanking = [
+                { _id: 'mock1', profile: { firstName: 'Sarah', lastName: 'Connor' } },
+                { _id: 'mock2', profile: { firstName: 'John', lastName: 'Wick' } },
+                { _id: 'mock3', profile: { firstName: 'James', lastName: 'Bond' } }
+            ];
+        }
+
         // Add fake ranking data
         const rankings = employeeRanking.map((emp, index) => ({
             _id: emp._id.toString(),

@@ -20,7 +20,7 @@ fun TargetAssignmentDialog(
     onDismiss: () -> Unit,
     onSubmit: (CreateTargetRequest) -> Unit
 ) {
-    var selectedEmployeeId by remember { mutableStateOf(employees.firstOrNull()?._id ?: "") }
+    var selectedEmployeeId by remember { mutableStateOf("TEAM") }
     var targetType by remember { mutableStateOf("DAILY") }
     var targetValue by remember { mutableStateOf("") }
     
@@ -33,16 +33,18 @@ fun TargetAssignmentDialog(
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                 // Employee Dropdown
+                val options = listOf(EmployeeDto("TEAM", "Whole Team (Divide Target)", "", "", "", false, "", "")) + employees
+                
                 ExposedDropdownMenuBox(
                     expanded = expandedEmployee,
                     onExpandedChange = { expandedEmployee = !expandedEmployee }
                 ) {
-                    val selectedName = employees.find { it._id == selectedEmployeeId }?.name ?: "Select Employee"
+                    val selectedName = options.find { it._id == selectedEmployeeId }?.name ?: "Select Employee"
                     OutlinedTextField(
                         value = selectedName,
                         onValueChange = {},
                         readOnly = true,
-                        label = { Text("Employee") },
+                        label = { Text("Employee / Team") },
                         trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedEmployee) },
                         modifier = Modifier.menuAnchor().fillMaxWidth()
                     )
@@ -50,7 +52,7 @@ fun TargetAssignmentDialog(
                         expanded = expandedEmployee,
                         onDismissRequest = { expandedEmployee = false }
                     ) {
-                        employees.forEach { emp ->
+                        options.forEach { emp ->
                             DropdownMenuItem(
                                 text = { Text(emp.name) },
                                 onClick = {
@@ -94,7 +96,7 @@ fun TargetAssignmentDialog(
                 OutlinedTextField(
                     value = targetValue,
                     onValueChange = { targetValue = it },
-                    label = { Text("Target Value (Calls)") },
+                    label = { Text(if (selectedEmployeeId == "TEAM") "Total Target Value (To be divided)" else "Target Value (Calls)") },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     modifier = Modifier.fillMaxWidth()
                 )
