@@ -36,13 +36,23 @@ import com.velstrack.app.core.theme.DeepSpaceBlack
 import com.velstrack.app.core.theme.NeonCyan
 import com.velstrack.app.core.theme.RoseDanger
 
+import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.TextRange
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DialerScreen(
     onNavigateBack: () -> Unit,
     onCallEnded: () -> Unit // Trigger sync after call
 ) {
-    var phoneNumber by remember { mutableStateOf("") }
+    var phoneNumberState by remember { mutableStateOf(TextFieldValue("")) }
+    val phoneNumber = phoneNumberState.text
     val context = LocalContext.current
     
     val permissionLauncher = rememberLauncherForActivityResult(
@@ -69,7 +79,8 @@ fun DialerScreen(
                 if (cursor.moveToFirst()) {
                     val numberIndex = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER)
                     val rawNumber = cursor.getString(numberIndex)
-                    phoneNumber = rawNumber.replace(Regex("[^0-9+*#]"), "")
+                    val formatted = rawNumber.replace(Regex("[^0-9+*#]"), "")
+                    phoneNumberState = TextFieldValue(text = formatted, selection = TextRange(formatted.length))
                 }
             }
         }
@@ -107,17 +118,56 @@ fun DialerScreen(
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text(
-                    text = if (phoneNumber.isEmpty()) "Enter Number" else phoneNumber,
-                    fontSize = 40.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = if (phoneNumber.isEmpty()) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurface,
-                    textAlign = TextAlign.Center,
-                    maxLines = 1,
-                    modifier = Modifier.fillMaxWidth()
-                )
-                if (phoneNumber.isNotEmpty()) {
-                    TextButton(onClick = { phoneNumber = "" }) {
+                val focusRequester = remember { FocusRequester() }
+                
+                Box(
+                    modifier = Modifier.fillMaxWidth(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    if (phoneNumberState.text.isEmpty()) {
+                        Text(
+                            text = "Enter Number",
+                            fontSize = 40.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                    
+                    BasicTextField(
+                        value = phoneNumberState,
+                        onValueChange = { newValue ->
+                            // Only allow valid characters
+                            val filtered = newValue.text.replace(Regex("[^0-9+*#]"), "")
+                            if (filtered == newValue.text) {
+                                phoneNumberState = newValue
+                            } else {
+                                phoneNumberState = newValue.copy(text = filtered)
+                            }
+                        },
+                        textStyle = TextStyle(
+                            fontSize = 40.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            textAlign = TextAlign.Center
+                        ),
+                        singleLine = true,
+                        cursorBrush = SolidColor(NeonCyan),
+                        keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
+                            keyboardType = androidx.compose.ui.text.input.KeyboardType.Phone
+                        ),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .focusRequester(focusRequester)
+                        // Optionally hide keyboard by making it readOnly? 
+                        // If readOnly=true, the cursor can't be moved manually on some devices. 
+                        // We will allow soft keyboard to show up if they tap it, 
+                        // which enables native paste and cursor movement.
+                    )
+                }
+                
+                if (phoneNumberState.text.isNotEmpty()) {
+                    TextButton(onClick = { phoneNumberState = TextFieldValue("") }) {
                         Text("Clear All", color = RoseDanger)
                     }
                 }
@@ -139,8 +189,21 @@ fun DialerScreen(
             ) {
                 items(keys.size) { index ->
                     DialerKey(text = keys[index]) {
-                        if (phoneNumber.length < 15) {
-                            phoneNumber += keys[index]
+                        if (phoneNumberState.text.length < 15) {
+                            val currentText = phoneNumberState.text
+                            val selectionStart = phoneNumberState.selection.start
+                            val selectionEnd = phoneNumberState.selection.end
+                            
+                            val insertStart = if (selectionStart < 0) currentText.length else selectionStart
+                            val insertEnd = if (selectionEnd < 0) currentText.length else selectionEnd
+
+                            val newText = currentText.replaceRange(insertStart, insertEnd, keys[index])
+                            val newCursorPos = insertStart + 1
+                            
+                            phoneNumberState = TextFieldValue(
+                                text = newText,
+                                selection = TextRange(newCursorPos)
+                            )
                         }
                     }
                 }
@@ -158,7 +221,22 @@ fun DialerScreen(
                     if (clipboard.hasPrimaryClip()) {
                         val text = clipboard.primaryClip?.getItemAt(0)?.text?.toString()
                         if (!text.isNullOrEmpty()) {
-                            phoneNumber = text.replace(Regex("[^0-9+*#]"), "")
+                            val formatted = text.replace(Regex("[^0-9+*#]"), "")
+                            
+                            val currentText = phoneNumberState.text
+                            val selectionStart = phoneNumberState.selection.start
+                            val selectionEnd = phoneNumberState.selection.end
+                            
+                            val insertStart = if (selectionStart < 0) currentText.length else selectionStart
+                            val insertEnd = if (selectionEnd < 0) currentText.length else selectionEnd
+
+                            val newText = currentText.replaceRange(insertStart, insertEnd, formatted)
+                            val newCursorPos = insertStart + formatted.length
+                            
+                            phoneNumberState = TextFieldValue(
+                                text = newText,
+                                selection = TextRange(newCursorPos)
+                            )
                         }
                     }
                 }) {
@@ -213,8 +291,33 @@ fun DialerScreen(
                 // Backspace Button
                 IconButton(
                     onClick = {
-                        if (phoneNumber.isNotEmpty()) {
-                            phoneNumber = phoneNumber.dropLast(1)
+                        val currentText = phoneNumberState.text
+                        val selectionStart = phoneNumberState.selection.start
+                        val selectionEnd = phoneNumberState.selection.end
+
+                        if (selectionStart != selectionEnd) {
+                            // Delete selection
+                            val insertStart = if (selectionStart < 0) currentText.length else selectionStart
+                            val insertEnd = if (selectionEnd < 0) currentText.length else selectionEnd
+                            val newText = currentText.replaceRange(insertStart, insertEnd, "")
+                            phoneNumberState = TextFieldValue(
+                                text = newText,
+                                selection = TextRange(insertStart)
+                            )
+                        } else if (selectionStart > 0) {
+                            // Delete previous character
+                            val newText = currentText.removeRange(selectionStart - 1, selectionStart)
+                            phoneNumberState = TextFieldValue(
+                                text = newText,
+                                selection = TextRange(selectionStart - 1)
+                            )
+                        } else if (selectionStart < 0 && currentText.isNotEmpty()) {
+                            // Fallback if no selection is active
+                            val newText = currentText.dropLast(1)
+                            phoneNumberState = TextFieldValue(
+                                text = newText,
+                                selection = TextRange(newText.length)
+                            )
                         }
                     },
                     modifier = Modifier.size(64.dp)
