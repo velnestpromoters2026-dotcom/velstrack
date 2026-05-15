@@ -9,11 +9,17 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface CallDao {
-    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertCalls(calls: List<CallEntity>)
 
-    @Query("SELECT * FROM calls WHERE isSynced = 0")
+    @Query("SELECT * FROM calls WHERE id = :id LIMIT 1")
+    suspend fun getCallById(id: String): CallEntity?
+
+    @Query("SELECT * FROM calls WHERE isSynced = 0 AND callVerified = 1")
     suspend fun getUnsyncedCalls(): List<CallEntity>
+
+    @Query("SELECT * FROM calls WHERE sessionState IN ('STARTED', 'DIALING', 'ACTIVE') AND timestamp < :olderThanMillis")
+    suspend fun getOrphanedSessions(olderThanMillis: Long): List<CallEntity>
 
     @Query("UPDATE calls SET isSynced = 1 WHERE id IN (:callIds)")
     suspend fun markAsSynced(callIds: List<String>)

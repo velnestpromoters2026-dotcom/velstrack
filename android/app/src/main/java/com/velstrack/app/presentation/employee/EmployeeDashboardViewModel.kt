@@ -37,6 +37,7 @@ class EmployeeDashboardViewModel @Inject constructor(
     private val callDao: CallDao,
     private val apiService: ApiService,
     private val sessionManager: SessionManager,
+    private val sessionRecoveryManager: com.velstrack.app.domain.telecom.SessionRecoveryManager,
     @ApplicationContext private val context: Context
 ) : ViewModel() {
 
@@ -44,6 +45,9 @@ class EmployeeDashboardViewModel @Inject constructor(
     val dashboardState: StateFlow<UiState<EmployeeDashboardDto>> = _dashboardState
 
     init {
+        viewModelScope.launch {
+            sessionRecoveryManager.recoverOrphanedSessions()
+        }
         loadDashboard()
     }
 

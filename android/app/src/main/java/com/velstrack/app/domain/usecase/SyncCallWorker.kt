@@ -35,7 +35,7 @@ class SyncCallWorker @AssistedInject constructor(
             // by the EmployeeDashboardViewModel when dialed from the app.
 
 
-            // 4. Fetch Unsynced
+            // 4. Fetch Unsynced (CallDao now filters by callVerified = 1)
             val unsynced = callDao.getUnsyncedCalls()
             if (unsynced.isEmpty()) {
                 Log.d("SyncCallWorker", "No unsynced calls. Done.")

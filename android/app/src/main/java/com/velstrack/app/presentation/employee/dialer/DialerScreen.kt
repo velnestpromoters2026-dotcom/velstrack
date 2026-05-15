@@ -57,6 +57,11 @@ fun DialerScreen(
     val phoneNumber = phoneNumberState.text
     val context = LocalContext.current
     
+    var isDefaultDialer by remember { mutableStateOf(false) }
+    var hasCallPermission by remember { 
+        mutableStateOf(ContextCompat.checkSelfPermission(context, Manifest.permission.CALL_PHONE) == PackageManager.PERMISSION_GRANTED) 
+    }
+    
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestMultiplePermissions()
     ) { permissions ->
@@ -76,17 +81,27 @@ fun DialerScreen(
     val roleLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()
     ) { result ->
-        // Whether granted or not, we continue.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            val roleManager = context.getSystemService(Context.ROLE_SERVICE) as RoleManager
+            isDefaultDialer = roleManager.isRoleHeld(RoleManager.ROLE_DIALER)
+        } else {
+            isDefaultDialer = true
+        }
     }
 
     LaunchedEffect(Unit) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             val roleManager = context.getSystemService(Context.ROLE_SERVICE) as RoleManager
-            if (!roleManager.isRoleHeld(RoleManager.ROLE_DIALER)) {
+            isDefaultDialer = roleManager.isRoleHeld(RoleManager.ROLE_DIALER)
+            if (!isDefaultDialer) {
                 val intent = roleManager.createRequestRoleIntent(RoleManager.ROLE_DIALER)
                 roleLauncher.launch(intent)
             }
+        } else {
+            isDefaultDialer = true
         }
+        
+        hasCallPermission = ContextCompat.checkSelfPermission(context, Manifest.permission.CALL_PHONE) == PackageManager.PERMISSION_GRANTED
     }
 
     val contactPickerLauncher = rememberLauncherForActivityResult(
@@ -132,12 +147,55 @@ fun DialerScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.SpaceBetween
         ) {
-            // Display Area
-            Column(
-                modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
+            if (!isDefaultDialer || !hasCallPermission) {
+                Column(
+                    modifier = Modifier.fillMaxSize(),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Warning,
+                        contentDescription = "Permission Required",
+                        tint = NeonCyan,
+                        modifier = Modifier.size(64.dp)
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(
+                        text = "Permissions Required",
+                        color = MaterialTheme.colorScheme.onSurface,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 20.sp
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "Velstrack requires call permissions and Default Dialer status to securely track sales activity.",
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+                        textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                        modifier = Modifier.padding(horizontal = 32.dp)
+                    )
+                    Spacer(modifier = Modifier.height(24.dp))
+                    Button(
+                        onClick = {
+                            if (!hasCallPermission) {
+                                permissionLauncher.launch(arrayOf(Manifest.permission.CALL_PHONE, Manifest.permission.READ_CALL_LOG))
+                            } else if (!isDefaultDialer && Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                                val roleManager = context.getSystemService(Context.ROLE_SERVICE) as RoleManager
+                                val intent = roleManager.createRequestRoleIntent(RoleManager.ROLE_DIALER)
+                                roleLauncher.launch(intent)
+                            }
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = NeonCyan)
+                    ) {
+                        Text("Grant Permissions", color = Color.Black)
+                    }
+                }
+            } else {
+                // Display Area
+                Column(
+                    modifier = Modifier.weight(1f),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
                 val focusRequester = remember { FocusRequester() }
                 
                 Box(

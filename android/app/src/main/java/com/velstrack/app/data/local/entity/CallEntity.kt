@@ -14,5 +14,9 @@ data class CallEntity(
     val durationSeconds: Int,
     val callType: String,
     val timestamp: Long,
-    val isSynced: Boolean = false
+    val isSynced: Boolean = false,
+    val connectedAtMillis: Long? = null,
+    val disconnectedAtMillis: Long? = null,
+    val sessionState: String = "STARTED",
+    val callVerified: Boolean = false
 )

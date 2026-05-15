@@ -6,42 +6,80 @@ import android.telecom.InCallService
 import android.util.Log
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
-import com.velstrack.app.data.local.dao.CallDao
-import com.velstrack.app.data.local.entity.CallEntity
-import com.velstrack.app.core.datastore.SessionManager
-import com.velstrack.app.domain.usecase.SyncCallWorker
+import com.velstrack.app.domain.telecom.OutgoingCallSessionManager
+import com.velstrack.app.domain.telecom.VerifiedCallExtractor
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
-import java.security.MessageDigest
 import javax.inject.Inject
+import androidx.core.content.ContextCompat
 
 @AndroidEntryPoint
 class VelstrackInCallService : InCallService() {
 
     @Inject
-    lateinit var callDao: CallDao
-
-    @Inject
     lateinit var sessionManager: SessionManager
+    
+    @Inject
+    lateinit var callDao: CallDao
+    
+    @Inject
+    lateinit var outgoingCallSessionManager: OutgoingCallSessionManager
+    
+    @Inject
+    lateinit var verifiedCallExtractor: VerifiedCallExtractor
+    
+    private var currentSessionId: String? = null
+    
+    private val callCallback = object : Call.Callback() {
+        override fun onStateChanged(call: Call, state: Int) {
+            super.onStateChanged(call, state)
+            
+            CoroutineScope(Dispatchers.IO).launch {
+                currentSessionId?.let { sessionId ->
+                    val session = callDao.getCallById(sessionId) ?: return@launch
+                    
+                    if (state == Call.STATE_ACTIVE && session.sessionState != "ACTIVE") {
+                        val activeSession = session.copy(
+                            sessionState = "ACTIVE",
+                            connectedAtMillis = System.currentTimeMillis()
+                        )
+                        callDao.insertCalls(listOf(activeSession))
+                        Log.d("VelstrackInCallService", "Session $sessionId moved to ACTIVE")
+                    } else if (state == Call.STATE_DISCONNECTED && session.sessionState != "DISCONNECTED") {
+                        verifiedCallExtractor.finalizeSession(sessionId, System.currentTimeMillis())
+                        Log.d("VelstrackInCallService", "Session $sessionId moved to DISCONNECTED and finalized")
+                    }
+                }
+            }
+        }
+    }
 
     override fun onCallAdded(call: Call?) {
         super.onCallAdded(call)
         CallManager.inCallService = this
         Log.d("VelstrackInCallService", "Call Added: ${call?.state}")
         
+        // Start Foreground Service to prevent OS killing
+        val serviceIntent = Intent(this, ForegroundTrackingService::class.java)
+        ContextCompat.startForegroundService(this, serviceIntent)
+        
         call?.let {
             CallManager.updateCall(it)
+            it.registerCallback(callCallback)
             
-            // If it's an incoming call, or if the user dialled, we want to launch our UI
-            // but for now, we'll just let the DialerScreen handle navigation to ActiveCallScreen
-            // or we could launch the activity here via Intent.
-            val number = it.details?.handle?.schemeSpecificPart ?: "Unknown"
+            val prefs = applicationContext.getSharedPreferences("velstrack_prefs", android.content.Context.MODE_PRIVATE)
+            val pendingNumber = prefs.getString("pending_call_number", null)
+            val pendingTime = prefs.getLong("pending_call_time", System.currentTimeMillis())
+            val number = pendingNumber ?: it.details?.handle?.schemeSpecificPart ?: "Unknown"
             
-            // Send broadcast or launch activity to show call UI
-            // Actually, best practice is to launch an Activity when a call is added
+            CoroutineScope(Dispatchers.IO).launch {
+                val employeeId = sessionManager.getUserId().firstOrNull() ?: "UNKNOWN_EMP"
+                currentSessionId = outgoingCallSessionManager.startSession(employeeId, number, pendingTime)
+            }
+            
             val intent = Intent(this, com.velstrack.app.MainActivity::class.java).apply {
                 flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP
                 putExtra("call_number", number)
@@ -55,64 +93,23 @@ class VelstrackInCallService : InCallService() {
         super.onCallRemoved(call)
         Log.d("VelstrackInCallService", "Call Removed")
         
-        call?.let {
-            val prefs = applicationContext.getSharedPreferences("velstrack_prefs", android.content.Context.MODE_PRIVATE)
-            val pendingNumber = prefs.getString("pending_call_number", null)
-            val pendingTime = prefs.getLong("pending_call_time", 0L)
-
-            val number = pendingNumber ?: it.details?.handle?.schemeSpecificPart ?: "Unknown"
-            val disconnectTime = System.currentTimeMillis()
-            
-            val durationSeconds = if (pendingTime > 0) {
-                ((disconnectTime - pendingTime) / 1000).toInt()
-            } else {
-                0
-            }
-            
-            val date = if (pendingTime > 0) pendingTime else disconnectTime
-            
-            // Extract exact state and log to database immediately
-            CoroutineScope(Dispatchers.IO).launch {
-                try {
-                    val employeeId = sessionManager.getUserId().firstOrNull() ?: "UNKNOWN_EMP"
-                    val normalizedDbNumber = number.replace(Regex("[^0-9+]"), "")
-
-                    val rawFingerprint = "${employeeId}${normalizedDbNumber}${date}${durationSeconds}"
-                    val digest = MessageDigest.getInstance("SHA-256")
-                    val hashBytes = digest.digest(rawFingerprint.toByteArray(Charsets.UTF_8))
-                    val fingerprint = hashBytes.joinToString("") { "%02x".format(it) }
-
-                    val id = "${number}_${date}"
-                    val matchedCall = CallEntity(
-                        id = id,
-                        callFingerprint = fingerprint,
-                        clientPhoneHash = number,
-                        durationSeconds = durationSeconds,
-                        callType = "OUTGOING",
-                        timestamp = date,
-                        isSynced = false
-                    )
-
-                    callDao.insertCalls(listOf(matchedCall))
-                    
-                    // Trigger background sync worker
-                    val workRequest = OneTimeWorkRequestBuilder<SyncCallWorker>().build()
-                    WorkManager.getInstance(applicationContext).enqueue(workRequest)
-                    
-                    // Clear pending call preference so dashboard doesn't double-log it
-                    val prefs = applicationContext.getSharedPreferences("velstrack_prefs", android.content.Context.MODE_PRIVATE)
-                    prefs.edit()
-                        .remove("pending_call_number")
-                        .remove("pending_call_time")
-                        .apply()
-                        
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                }
-            }
-        }
+        call?.unregisterCallback(callCallback)
         
+        // Stop Foreground Service
+        val serviceIntent = Intent(this, ForegroundTrackingService::class.java).apply {
+            action = ForegroundTrackingService.ACTION_STOP
+        }
+        startService(serviceIntent)
+        
+        // Cleanup preferences
+        val prefs = applicationContext.getSharedPreferences("velstrack_prefs", android.content.Context.MODE_PRIVATE)
+        prefs.edit()
+            .remove("pending_call_number")
+            .remove("pending_call_time")
+            .apply()
+            
         CallManager.updateCall(null)
         CallManager.inCallService = null
+        currentSessionId = null
     }
 }
