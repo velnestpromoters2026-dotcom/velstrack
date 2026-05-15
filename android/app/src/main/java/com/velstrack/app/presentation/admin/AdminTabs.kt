@@ -149,7 +149,7 @@ fun AdminTargetsTab(viewModel: AdminViewModel) {
                                 
                                 val progress = if (target.targetValue > 0) target.achievedValue.toFloat() / target.targetValue else 0f
                                 LinearProgressIndicator(
-                                    progress = { progress },
+                                    progress = progress,
                                     modifier = Modifier.fillMaxWidth().height(8.dp).padding(top = 8.dp),
                                     color = ElectricIndigo,
                                     trackColor = MaterialTheme.colorScheme.surfaceVariant
@@ -185,6 +185,7 @@ fun AdminTargetsTab(viewModel: AdminViewModel) {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AdminCampaignsTab(viewModel: AdminViewModel) {
     val metaStatusState by viewModel.metaStatusState.collectAsState()
@@ -297,7 +298,7 @@ fun AdminAnalyticsTab(viewModel: AdminViewModel) {
                                     Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
                                         Text(day.date, modifier = Modifier.width(40.dp), color = MaterialTheme.colorScheme.onSurfaceVariant)
                                         LinearProgressIndicator(
-                                            progress = { day.calls / 100f },
+                                            progress = day.calls / 100f,
                                             modifier = Modifier.weight(1f).height(12.dp).clip(CircleShape),
                                             color = NeonCyan,
                                             trackColor = MaterialTheme.colorScheme.surfaceVariant
@@ -331,7 +332,7 @@ fun AdminAnalyticsTab(viewModel: AdminViewModel) {
                                 Column(horizontalAlignment = Alignment.End) {
                                     Text("${rank.callsToday} Calls", fontWeight = FontWeight.Bold, color = NeonCyan)
                                     Icon(
-                                        imageVector = if (rank.trend == "UP") Icons.Default.ArrowUpward else Icons.Default.ArrowDownward,
+                                        imageVector = if (rank.trend == "UP") Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
                                         contentDescription = rank.trend,
                                         tint = if (rank.trend == "UP") EmeraldSuccess else RoseDanger,
                                         modifier = Modifier.size(16.dp)

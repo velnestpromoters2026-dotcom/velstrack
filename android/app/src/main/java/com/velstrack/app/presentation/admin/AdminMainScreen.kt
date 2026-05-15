@@ -43,11 +43,11 @@ fun AdminMainScreen(
         },
         bottomBar = {
             NavigationBar(
-                containerColor = NightRider,
+                containerColor = MaterialTheme.colorScheme.surface,
                 contentColor = MaterialTheme.colorScheme.onSurfaceVariant
             ) {
                 val items = listOf("Overview", "Team", "Targets", "Campaigns", "Analytics")
-                val icons = listOf(Icons.Default.Home, Icons.Default.Person, Icons.Default.CheckCircle, Icons.Default.Campaign, Icons.Default.Analytics)
+                val icons = listOf(Icons.Default.Home, Icons.Default.Person, Icons.Default.CheckCircle, Icons.Default.Settings, Icons.Default.DateRange)
 
                 items.forEachIndexed { index, item ->
                     NavigationBarItem(

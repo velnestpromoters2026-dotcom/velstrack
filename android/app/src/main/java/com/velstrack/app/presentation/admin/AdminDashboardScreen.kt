@@ -40,6 +40,11 @@ fun AdminOverviewTab(
                         color = ElectricIndigo
                     )
                 }
+                is UiState.Empty -> {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Text("Dashboard data is empty.", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                }
                 is UiState.Error -> {
                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                         ErrorStateCard(
