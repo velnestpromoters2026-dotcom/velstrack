@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.velstrack.app.core.datastore.SessionManager
 import com.velstrack.app.data.remote.api.ApiService
+import com.velstrack.app.data.remote.api.LoginRequest
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -32,7 +33,7 @@ class AuthViewModel @Inject constructor(
         
         viewModelScope.launch {
             try {
-                val request = mapOf("email" to trimmedEmail, "password" to trimmedPass)
+                val request = LoginRequest(email = trimmedEmail, password = trimmedPass)
                 val response = apiService.login(request)
                 
                 if (response.isSuccessful) {

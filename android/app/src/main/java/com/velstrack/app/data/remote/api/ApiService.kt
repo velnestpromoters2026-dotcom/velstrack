@@ -14,10 +14,15 @@ data class LoginResponse(
     val token: String
 )
 
+data class LoginRequest(
+    val email: String,
+    val password: String
+)
+
 interface ApiService {
     
     @POST("auth/login")
-    suspend fun login(@Body request: Map<String, String>): Response<ApiResponse<LoginResponse>>
+    suspend fun login(@Body request: LoginRequest): Response<ApiResponse<LoginResponse>>
 
     @POST("auth/logout")
     suspend fun logout(): Response<ApiResponse<Unit>>
