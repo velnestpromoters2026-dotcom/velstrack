@@ -42,6 +42,9 @@ object NetworkModule {
             level = HttpLoggingInterceptor.Level.BODY 
         }
         return OkHttpClient.Builder()
+            .connectTimeout(60, java.util.concurrent.TimeUnit.SECONDS)
+            .readTimeout(60, java.util.concurrent.TimeUnit.SECONDS)
+            .writeTimeout(60, java.util.concurrent.TimeUnit.SECONDS)
             .addInterceptor(logging)
             .addInterceptor(authInterceptor)
             .build()
