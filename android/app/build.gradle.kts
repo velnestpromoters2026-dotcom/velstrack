@@ -22,10 +22,20 @@ android {
         }
     }
 
+    signingConfigs {
+        create("release") {
+            storeFile = file("velstrack.keystore")
+            storePassword = "velstrack123"
+            keyAlias = "velstrack"
+            keyPassword = "velstrack123"
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            signingConfig = signingConfigs.getByName("release")
         }
     }
     compileOptions {
