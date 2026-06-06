@@ -36,27 +36,8 @@ class VelstrackInCallService : InCallService() {
     private var currentSessionId: String? = null
     
     private val callCallback = object : Call.Callback() {
-        override fun onStateChanged(call: Call, state: Int) {
-            super.onStateChanged(call, state)
-            
-            CoroutineScope(Dispatchers.IO).launch {
-                currentSessionId?.let { sessionId ->
-                    val session = callDao.getCallById(sessionId) ?: return@launch
-                    
-                    if (state == Call.STATE_ACTIVE && session.sessionState != "ACTIVE") {
-                        val activeSession = session.copy(
-                            sessionState = "ACTIVE",
-                            connectedAtMillis = System.currentTimeMillis()
-                        )
-                        callDao.insertCalls(listOf(activeSession))
-                        Log.d("VelstrackInCallService", "Session $sessionId moved to ACTIVE")
-                    } else if (state == Call.STATE_DISCONNECTED && session.sessionState != "DISCONNECTED") {
-                        verifiedCallExtractor.finalizeSession(sessionId, System.currentTimeMillis())
-                        Log.d("VelstrackInCallService", "Session $sessionId moved to DISCONNECTED and finalized")
-                    }
-                }
-            }
-        }
+        // Simplified: We no longer track active/disconnected durations.
+        // We only care that the call was placed.
     }
 
     override fun onCallAdded(call: Call?) {

@@ -81,4 +81,7 @@ dependencies {
     // Coil & Lottie
     implementation("io.coil-kt:coil-compose:2.5.0")
     implementation("com.airbnb.android:lottie-compose:6.1.0")
+
+    // Excel Export
+    implementation("org.dhatim:fastexcel:0.12.13")
 }

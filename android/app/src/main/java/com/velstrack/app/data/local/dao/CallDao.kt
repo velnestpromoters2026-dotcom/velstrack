@@ -21,6 +21,9 @@ interface CallDao {
     @Query("SELECT * FROM calls WHERE sessionState IN ('STARTED', 'DIALING', 'ACTIVE') AND timestamp < :olderThanMillis")
     suspend fun getOrphanedSessions(olderThanMillis: Long): List<CallEntity>
 
+    @Query("SELECT * FROM calls ORDER BY timestamp DESC")
+    suspend fun getAllCalls(): List<CallEntity>
+
     @Query("UPDATE calls SET isSynced = 1 WHERE id IN (:callIds)")
     suspend fun markAsSynced(callIds: List<String>)
 

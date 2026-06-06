@@ -23,47 +23,6 @@ class VerifiedCallExtractor @Inject constructor(
 ) {
 
     suspend fun finalizeSession(sessionId: String, disconnectedAtMillis: Long) {
-        withContext(Dispatchers.IO) {
-            val session = callDao.getCallById(sessionId)
-            
-            if (session == null) {
-                Log.e("VerifiedCallExtractor", "Orphaned or missing session: $sessionId")
-                return@withContext
-            }
-            
-            // Recompute duration directly from our internal cached epochs
-            val connectTime = session.connectedAtMillis ?: session.timestamp
-            val durationSeconds = ((disconnectedAtMillis - connectTime) / 1000).toInt()
-            
-            // Only verify if duration is reasonable (e.g. >= 0)
-            val isVerified = durationSeconds >= 0
-            
-            val employeeId = sessionManager.getUserId().firstOrNull() ?: "UNKNOWN_EMP"
-            val normalizedDbNumber = session.clientPhoneHash.replace(Regex("[^0-9+]"), "")
-            
-            // Secure final fingerprint
-            val rawFingerprint = "${employeeId}${normalizedDbNumber}${connectTime}${durationSeconds}"
-            val digest = MessageDigest.getInstance("SHA-256")
-            val hashBytes = digest.digest(rawFingerprint.toByteArray(Charsets.UTF_8))
-            val fingerprint = hashBytes.joinToString("") { "%02x".format(it) }
-
-            val finalSession = session.copy(
-                disconnectedAtMillis = disconnectedAtMillis,
-                durationSeconds = durationSeconds,
-                sessionState = "DISCONNECTED",
-                callVerified = isVerified,
-                callFingerprint = fingerprint
-            )
-            
-            callDao.insertCalls(listOf(finalSession))
-            
-            if (isVerified) {
-                Log.d("VerifiedCallExtractor", "Call verified: $durationSeconds seconds. Queueing sync.")
-                val workRequest = OneTimeWorkRequestBuilder<SyncCallWorker>().build()
-                WorkManager.getInstance(context).enqueue(workRequest)
-            } else {
-                Log.w("VerifiedCallExtractor", "Call validation failed. Duration: $durationSeconds")
-            }
-        }
+        // No longer used since we verify instantly on start.
     }
 }

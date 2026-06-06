@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Call
+import androidx.compose.material.icons.filled.CloudDownload
 import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.*
@@ -126,6 +127,29 @@ fun EmployeeDashboardScreen(
                 ),
                 actions = {
                     if (hasPermission) {
+                        IconButton(onClick = {
+                            coroutineScope.launch {
+                                val path = viewModel.exportCallsToExcel()
+                                if (path != null) {
+                                    android.widget.Toast.makeText(context, "Exported: $path", android.widget.Toast.LENGTH_LONG).show()
+                                } else {
+                                    android.widget.Toast.makeText(context, "Failed to export or no calls found", android.widget.Toast.LENGTH_SHORT).show()
+                                }
+                            }
+                        }) {
+                            Icon(imageVector = androidx.compose.material.icons.filled.List, contentDescription = "Export Excel", tint = NeonCyan)
+                        }
+                        IconButton(onClick = {
+                            viewModel.checkForUpdates { found ->
+                                if (found) {
+                                    android.widget.Toast.makeText(context, "Update found! Downloading...", android.widget.Toast.LENGTH_SHORT).show()
+                                } else {
+                                    android.widget.Toast.makeText(context, "You are on the latest version.", android.widget.Toast.LENGTH_SHORT).show()
+                                }
+                            }
+                        }) {
+                            Icon(imageVector = androidx.compose.material.icons.filled.CloudDownload, contentDescription = "Check for Updates", tint = NeonCyan)
+                        }
                         IconButton(onClick = {
                             coroutineScope.launch {
                                 viewModel.syncCallsNowAndLoad()

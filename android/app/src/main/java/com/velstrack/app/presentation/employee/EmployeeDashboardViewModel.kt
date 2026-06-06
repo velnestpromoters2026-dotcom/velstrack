@@ -30,6 +30,9 @@ import com.velstrack.app.data.remote.dto.SyncCallRequest
 import java.security.MessageDigest
 import java.util.Calendar
 
+import com.velstrack.app.domain.export.ExcelExportManager
+import com.velstrack.app.domain.updater.AppUpdater
+
 @HiltViewModel
 class EmployeeDashboardViewModel @Inject constructor(
     private val repository: EmployeeRepository,
@@ -38,6 +41,8 @@ class EmployeeDashboardViewModel @Inject constructor(
     private val apiService: ApiService,
     private val sessionManager: SessionManager,
     private val sessionRecoveryManager: com.velstrack.app.domain.telecom.SessionRecoveryManager,
+    private val excelExportManager: ExcelExportManager,
+    private val appUpdater: AppUpdater,
     @ApplicationContext private val context: Context
 ) : ViewModel() {
 
@@ -240,6 +245,19 @@ class EmployeeDashboardViewModel @Inject constructor(
                 syncCallsNowAndLoad()
             } catch (e: Exception) {
                 e.printStackTrace()
+            }
+        }
+    }
+
+    suspend fun exportCallsToExcel(): String? {
+        return excelExportManager.exportCallsToExcel()
+    }
+
+    fun checkForUpdates(onResult: (Boolean) -> Unit) {
+        viewModelScope.launch {
+            val result = appUpdater.checkForUpdates()
+            withContext(Dispatchers.Main) {
+                onResult(result)
             }
         }
     }
