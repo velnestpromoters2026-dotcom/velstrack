@@ -39,6 +39,12 @@ jobs:
       - name: Rename APK
         run: mv android/app/build/outputs/apk/release/app-release.apk android/app/build/outputs/apk/release/velstrack-release.apk
 
+      - name: Upload APK as Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: velstrack-release-apk
+          path: android/app/build/outputs/apk/release/velstrack-release.apk
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
         with:
