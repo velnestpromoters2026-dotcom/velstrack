@@ -9,12 +9,16 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import com.velstrack.app.domain.updater.AppUpdater
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @HiltViewModel
 class AuthViewModel @Inject constructor(
     private val apiService: ApiService,
-    private val sessionManager: SessionManager
+    private val sessionManager: SessionManager,
+    private val appUpdater: AppUpdater
 ) : ViewModel() {
 
     private val _loginState = MutableStateFlow<LoginState>(LoginState.Idle)
@@ -64,6 +68,15 @@ class AuthViewModel @Inject constructor(
             } finally {
                 sessionManager.clearSession()
                 _loginState.value = LoginState.Idle
+            }
+        }
+    }
+
+    fun checkForUpdates(onResult: (Boolean) -> Unit) {
+        viewModelScope.launch {
+            val result = appUpdater.checkForUpdates()
+            withContext(Dispatchers.Main) {
+                onResult(result)
             }
         }
     }

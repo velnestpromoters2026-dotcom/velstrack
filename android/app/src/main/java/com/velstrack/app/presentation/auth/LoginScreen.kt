@@ -13,6 +13,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.platform.LocalContext
+import android.widget.Toast
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -31,6 +33,8 @@ fun LoginScreen(
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
+    val context = LocalContext.current
+    var isCheckingUpdate by remember { mutableStateOf(false) }
     
     val loginState by viewModel.loginState.collectAsState()
 
@@ -133,6 +137,32 @@ fun LoginScreen(
                             modifier = Modifier.fillMaxWidth()
                         )
                     }
+                }
+            }
+            
+            Spacer(modifier = Modifier.height(24.dp))
+            
+            if (isCheckingUpdate) {
+                CircularProgressIndicator(color = com.velstrack.app.core.theme.NeonCyan, modifier = Modifier.size(24.dp))
+            } else {
+                TextButton(
+                    onClick = {
+                        isCheckingUpdate = true
+                        viewModel.checkForUpdates { updateFound ->
+                            isCheckingUpdate = false
+                            if (updateFound) {
+                                Toast.makeText(context, "Update found! Downloading...", Toast.LENGTH_SHORT).show()
+                            } else {
+                                Toast.makeText(context, "App is up to date", Toast.LENGTH_SHORT).show()
+                            }
+                        }
+                    }
+                ) {
+                    Text(
+                        text = "Check for Updates",
+                        color = Color.Gray,
+                        style = MaterialTheme.typography.bodyMedium
+                    )
                 }
             }
         }
