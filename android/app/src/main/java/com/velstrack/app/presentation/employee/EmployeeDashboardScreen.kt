@@ -137,7 +137,7 @@ fun EmployeeDashboardScreen(
                                 }
                             }
                         }) {
-                            Icon(imageVector = androidx.compose.material.icons.filled.List, contentDescription = "Export Excel", tint = NeonCyan)
+                            Icon(imageVector = Icons.Default.Menu, contentDescription = "Export Excel", tint = NeonCyan)
                         }
                         IconButton(onClick = {
                             viewModel.checkForUpdates { found ->
@@ -148,7 +148,7 @@ fun EmployeeDashboardScreen(
                                 }
                             }
                         }) {
-                            Icon(imageVector = androidx.compose.material.icons.filled.CloudDownload, contentDescription = "Check for Updates", tint = NeonCyan)
+                            Icon(imageVector = Icons.Default.Info, contentDescription = "Check for Updates", tint = NeonCyan)
                         }
                         IconButton(onClick = {
                             coroutineScope.launch {
