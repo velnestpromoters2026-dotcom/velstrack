@@ -20,7 +20,10 @@ class AuthViewModel @Inject constructor(
     val loginState: StateFlow<LoginState> = _loginState
 
     fun login(email: String, pass: String) {
-        if (email.isBlank() || pass.isBlank()) {
+        val trimmedEmail = email.trim()
+        val trimmedPass = pass.trim()
+        
+        if (trimmedEmail.isBlank() || trimmedPass.isBlank()) {
             _loginState.value = LoginState.Error("Please enter email and password")
             return
         }
@@ -29,7 +32,7 @@ class AuthViewModel @Inject constructor(
         
         viewModelScope.launch {
             try {
-                val request = mapOf("email" to email, "password" to pass)
+                val request = mapOf("email" to trimmedEmail, "password" to trimmedPass)
                 val response = apiService.login(request)
                 
                 if (response.isSuccessful) {
@@ -45,7 +48,8 @@ class AuthViewModel @Inject constructor(
                     _loginState.value = LoginState.Error("Invalid email or password")
                 }
             } catch (e: Exception) {
-                _loginState.value = LoginState.Error("Network Error: Could not connect to server")
+                e.printStackTrace()
+                _loginState.value = LoginState.Error("Error: ${e.message ?: "Unknown network error"}")
             }
         }
     }
