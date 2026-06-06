@@ -20,11 +20,15 @@ jobs:
           distribution: 'zulu'
           java-version: '17'
 
+      - name: Setup Gradle
+        uses: gradle/gradle-build-action@v2
+        with:
+          gradle-version: '8.4'
+
       - name: Build Release APK
         run: |
           cd android
-          chmod +x gradlew
-          ./gradlew assembleRelease
+          gradle assembleRelease
 
       - name: Rename APK
         run: mv android/app/build/outputs/apk/release/app-release.apk android/app/build/outputs/apk/release/velstrack-release.apk
