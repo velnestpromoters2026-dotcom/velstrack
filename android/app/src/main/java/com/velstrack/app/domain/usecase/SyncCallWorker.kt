@@ -7,7 +7,7 @@ import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.velstrack.app.data.local.dao.CallDao
-import com.velstrack.app.data.local.entity.CallEntity
+import com.velstrack.app.data.local.entity.TrackedCallSession
 import com.velstrack.app.data.remote.api.ApiService
 import com.velstrack.app.data.remote.dto.SyncCallDto
 import com.velstrack.app.data.remote.dto.SyncCallRequest
@@ -35,8 +35,8 @@ class SyncCallWorker @AssistedInject constructor(
             // by the EmployeeDashboardViewModel when dialed from the app.
 
 
-            // 4. Fetch Unsynced (CallDao now filters by callVerified = 1)
-            val unsynced = callDao.getUnsyncedCalls()
+            // 4. Fetch Unsynced Verified Sessions
+            val unsynced = callDao.getUnsyncedSessions()
             if (unsynced.isEmpty()) {
                 Log.d("SyncCallWorker", "No unsynced calls. Done.")
                 return@withContext Result.success()
@@ -45,11 +45,11 @@ class SyncCallWorker @AssistedInject constructor(
             // 5. Sync to API
             val dtos = unsynced.map {
                 SyncCallDto(
-                    clientPhoneHash = it.clientPhoneHash,
-                    durationSeconds = it.durationSeconds,
-                    callType = it.callType,
-                    timestamp = it.timestamp,
-                    callFingerprint = it.callFingerprint,
+                    clientPhoneHash = it.phoneNumber, // Using raw phone number as requested
+                    durationSeconds = it.durationSeconds ?: 0,
+                    callType = it.callType ?: "OUTGOING",
+                    timestamp = it.startedAt,
+                    callFingerprint = it.callFingerprint ?: "NO_FINGERPRINT",
                     isVelstrackCall = true
                 )
             }
@@ -59,7 +59,7 @@ class SyncCallWorker @AssistedInject constructor(
 
             if (response.isSuccessful && response.body()?.success == true) {
                 // 6. Mark synced
-                callDao.markAsSynced(unsynced.map { it.id })
+                callDao.markSessionsAsSynced(unsynced.map { it.sessionId })
                 Log.d("SyncCallWorker", "Successfully synced ${unsynced.size} calls.")
                 Result.success()
             } else {

@@ -49,11 +49,14 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import android.app.role.RoleManager
 import android.os.Build
 
+import com.velstrack.app.presentation.employee.EmployeeDashboardViewModel
+import androidx.hilt.navigation.compose.hiltViewModel
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DialerScreen(
     onNavigateBack: () -> Unit,
-    onNavigateToActiveCall: (String) -> Unit
+    viewModel: EmployeeDashboardViewModel = hiltViewModel()
 ) {
     var phoneNumberState by remember { mutableStateOf(TextFieldValue("")) }
     val phoneNumber = phoneNumberState.text
@@ -69,12 +72,7 @@ fun DialerScreen(
     ) { permissions ->
         val callPhoneGranted = permissions[Manifest.permission.CALL_PHONE] ?: false
         if (callPhoneGranted && phoneNumber.isNotEmpty()) {
-            val prefs = context.getSharedPreferences("velstrack_prefs", Context.MODE_PRIVATE)
-            prefs.edit()
-                .putString("pending_call_number", phoneNumber)
-                .putLong("pending_call_time", System.currentTimeMillis())
-                .apply()
-                
+            viewModel.createPendingSession(phoneNumber)
             val intent = Intent(Intent.ACTION_CALL, Uri.parse("tel:$phoneNumber"))
             context.startActivity(intent)
         }
@@ -92,17 +90,6 @@ fun DialerScreen(
     }
 
     LaunchedEffect(Unit) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            val roleManager = context.getSystemService(Context.ROLE_SERVICE) as RoleManager
-            isDefaultDialer = roleManager.isRoleHeld(RoleManager.ROLE_DIALER)
-            if (!isDefaultDialer) {
-                val intent = roleManager.createRequestRoleIntent(RoleManager.ROLE_DIALER)
-                roleLauncher.launch(intent)
-            }
-        } else {
-            isDefaultDialer = true
-        }
-        
         hasCallPermission = ContextCompat.checkSelfPermission(context, Manifest.permission.CALL_PHONE) == PackageManager.PERMISSION_GRANTED
     }
 
@@ -149,7 +136,7 @@ fun DialerScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.SpaceBetween
         ) {
-            if (!isDefaultDialer || !hasCallPermission) {
+            if (!hasCallPermission) {
                 Column(
                     modifier = Modifier.fillMaxSize(),
                     verticalArrangement = Arrangement.Center,
@@ -170,7 +157,7 @@ fun DialerScreen(
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = "Velstrack requires call permissions and Default Dialer status to securely track sales activity.",
+                        text = "Velstrack requires call permissions to securely track sales activity.",
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
                         textAlign = androidx.compose.ui.text.style.TextAlign.Center,
                         modifier = Modifier.padding(horizontal = 32.dp)
@@ -178,13 +165,7 @@ fun DialerScreen(
                     Spacer(modifier = Modifier.height(24.dp))
                     Button(
                         onClick = {
-                            if (!hasCallPermission) {
-                                permissionLauncher.launch(arrayOf(Manifest.permission.CALL_PHONE, Manifest.permission.READ_CALL_LOG))
-                            } else if (!isDefaultDialer && Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                                val roleManager = context.getSystemService(Context.ROLE_SERVICE) as RoleManager
-                                val intent = roleManager.createRequestRoleIntent(RoleManager.ROLE_DIALER)
-                                roleLauncher.launch(intent)
-                            }
+                            permissionLauncher.launch(arrayOf(Manifest.permission.CALL_PHONE, Manifest.permission.READ_CALL_LOG))
                         },
                         colors = ButtonDefaults.buttonColors(containerColor = NeonCyan)
                     ) {
@@ -348,11 +329,7 @@ fun DialerScreen(
                     onClick = {
                         if (phoneNumber.isNotEmpty()) {
                             if (ContextCompat.checkSelfPermission(context, Manifest.permission.CALL_PHONE) == PackageManager.PERMISSION_GRANTED) {
-                                val prefs = context.getSharedPreferences("velstrack_prefs", Context.MODE_PRIVATE)
-                                prefs.edit()
-                                    .putString("pending_call_number", phoneNumber)
-                                    .putLong("pending_call_time", System.currentTimeMillis())
-                                    .apply()
+                                viewModel.createPendingSession(phoneNumber)
 
                                 // If we don't have READ_CALL_LOG, request it silently while calling
                                 if (ContextCompat.checkSelfPermission(context, Manifest.permission.READ_CALL_LOG) != PackageManager.PERMISSION_GRANTED) {

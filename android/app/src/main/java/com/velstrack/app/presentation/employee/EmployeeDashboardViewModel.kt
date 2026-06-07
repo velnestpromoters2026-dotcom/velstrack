@@ -19,19 +19,24 @@ import kotlinx.coroutines.withContext
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import android.provider.CallLog
+import android.provider.ContactsContract
 import android.content.Context
 import dagger.hilt.android.qualifiers.ApplicationContext
+import android.net.Uri
 import com.velstrack.app.data.local.dao.CallDao
-import com.velstrack.app.data.local.entity.CallEntity
+import com.velstrack.app.data.local.entity.TrackedCallSession
 import com.velstrack.app.data.remote.api.ApiService
 import com.velstrack.app.core.datastore.SessionManager
 import com.velstrack.app.data.remote.dto.SyncCallDto
 import com.velstrack.app.data.remote.dto.SyncCallRequest
 import java.security.MessageDigest
-import java.util.Calendar
+import java.text.SimpleDateFormat
+import java.util.Locale
+import java.util.Date
 
 import com.velstrack.app.domain.export.ExcelExportManager
 import com.velstrack.app.domain.updater.AppUpdater
+import java.util.UUID
 
 @HiltViewModel
 class EmployeeDashboardViewModel @Inject constructor(
@@ -40,7 +45,6 @@ class EmployeeDashboardViewModel @Inject constructor(
     private val callDao: CallDao,
     private val apiService: ApiService,
     private val sessionManager: SessionManager,
-    private val sessionRecoveryManager: com.velstrack.app.domain.telecom.SessionRecoveryManager,
     private val excelExportManager: ExcelExportManager,
     private val appUpdater: AppUpdater,
     @ApplicationContext private val context: Context
@@ -50,9 +54,6 @@ class EmployeeDashboardViewModel @Inject constructor(
     val dashboardState: StateFlow<UiState<EmployeeDashboardDto>> = _dashboardState
 
     init {
-        viewModelScope.launch {
-            sessionRecoveryManager.recoverOrphanedSessions()
-        }
         loadDashboard()
     }
 
@@ -79,7 +80,6 @@ class EmployeeDashboardViewModel @Inject constructor(
             syncRequest
         )
 
-        // Run background worker as fallback
         val immediateRequest = androidx.work.OneTimeWorkRequestBuilder<SyncCallWorker>().build()
         workManager.enqueueUniqueWork(
             "CallSyncWorker_Immediate",
@@ -88,25 +88,56 @@ class EmployeeDashboardViewModel @Inject constructor(
         )
     }
 
-    private fun hashPhoneNumber(number: String): String {
-        // Return raw number instead of hashing so it shows up correctly in the UI
-        return number
+    fun createPendingSession(phoneNumber: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val employeeId = sessionManager.getUserId().firstOrNull() ?: "UNKNOWN"
+            val session = TrackedCallSession(
+                sessionId = UUID.randomUUID().toString(),
+                employeeId = employeeId,
+                phoneNumber = phoneNumber,
+                startedAt = System.currentTimeMillis(),
+                status = "PENDING"
+            )
+            callDao.insertTrackedCallSession(session)
+        }
+    }
+
+    private fun getContactName(phoneNumber: String): String {
+        var contactName = "Unknown Contact"
+        try {
+            val uri = Uri.withAppendedPath(ContactsContract.PhoneLookup.CONTENT_FILTER_URI, Uri.encode(phoneNumber))
+            val projection = arrayOf(ContactsContract.PhoneLookup.DISPLAY_NAME)
+            val cursor = context.contentResolver.query(uri, projection, null, null, null)
+            cursor?.use {
+                if (it.moveToFirst()) {
+                    contactName = it.getString(0) ?: "Unknown Contact"
+                }
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+        return contactName
+    }
+
+    private fun formatDuration(seconds: Int): String {
+        return when {
+            seconds < 60 -> "${seconds}s"
+            seconds < 3600 -> "${seconds / 60}m ${seconds % 60}s"
+            else -> "${seconds / 3600}h ${(seconds % 3600) / 60}m"
+        }
     }
 
     suspend fun syncCallsNowAndLoad() {
         _dashboardState.value = UiState.Loading
         withContext(Dispatchers.IO) {
             try {
-                // Add a small delay to allow native Android dialer to write to CallLog database
-                kotlinx.coroutines.delay(3000)
-                
-                val prefs = context.getSharedPreferences("velstrack_prefs", Context.MODE_PRIVATE)
-                val pendingNumber = prefs.getString("pending_call_number", null)
-                val pendingCallTime = prefs.getLong("pending_call_time", 0L)
+                // 1. Verify pending sessions
+                val pendingSessions = callDao.getPendingSessions()
+                if (pendingSessions.isNotEmpty()) {
+                    kotlinx.coroutines.delay(2000) // Give OS time to write to CallLog
 
-                if (pendingNumber != null) {
-                    try {
-                        val searchTime = pendingCallTime - 60000
+                    pendingSessions.forEach { session ->
+                        val searchTime = session.startedAt - 60000 // 1 min buffer
                         val cursor = context.contentResolver.query(
                             CallLog.Calls.CONTENT_URI,
                             arrayOf(CallLog.Calls.NUMBER, CallLog.Calls.DURATION, CallLog.Calls.TYPE, CallLog.Calls.DATE),
@@ -115,20 +146,17 @@ class EmployeeDashboardViewModel @Inject constructor(
                             "${CallLog.Calls.DATE} DESC"
                         )
 
-                        val employeeId = sessionManager.getUserId().firstOrNull() ?: "UNKNOWN_EMP"
-                        var matchedCall: CallEntity? = null
-
+                        var matched = false
                         cursor?.use { c ->
                             val numberIdx = c.getColumnIndex(CallLog.Calls.NUMBER)
                             val durationIdx = c.getColumnIndex(CallLog.Calls.DURATION)
                             val typeIdx = c.getColumnIndex(CallLog.Calls.TYPE)
                             val dateIdx = c.getColumnIndex(CallLog.Calls.DATE)
 
-                            while (c.moveToNext()) {
+                            while (c.moveToNext() && !matched) {
                                 val number = c.getString(numberIdx) ?: continue
-                                // Check if this call matches our pending number (strip formatting)
                                 val normalizedDbNumber = number.replace(Regex("[^0-9+]"), "")
-                                val normalizedPending = pendingNumber.replace(Regex("[^0-9+]"), "")
+                                val normalizedPending = session.phoneNumber.replace(Regex("[^0-9+]"), "")
                                 
                                 if (normalizedDbNumber == normalizedPending || normalizedDbNumber.contains(normalizedPending) || normalizedPending.contains(normalizedDbNumber)) {
                                     val duration = c.getInt(durationIdx)
@@ -141,60 +169,44 @@ class EmployeeDashboardViewModel @Inject constructor(
                                     }
 
                                     if (typeStr == "OUTGOING") {
-                                        val rawFingerprint = "${employeeId}${normalizedDbNumber}${date}${duration}"
+                                        // VERIFIED COMPANY CALL
+                                        val rawFingerprint = "${session.employeeId}${normalizedDbNumber}${date}${duration}"
                                         val digest = MessageDigest.getInstance("SHA-256")
                                         val hashBytes = digest.digest(rawFingerprint.toByteArray(Charsets.UTF_8))
                                         val fingerprint = hashBytes.joinToString("") { "%02x".format(it) }
 
-                                        val id = "${hashPhoneNumber(number)}_${date}"
-                                        matchedCall = CallEntity(
-                                            id = id,
-                                            callFingerprint = fingerprint,
-                                            clientPhoneHash = hashPhoneNumber(number),
+                                        val dateFormat = SimpleDateFormat("dd MMM yyyy", Locale.getDefault())
+                                        val timeFormat = SimpleDateFormat("hh:mm a", Locale.getDefault())
+
+                                        val verifiedSession = session.copy(
+                                            status = "VERIFIED",
+                                            contactName = getContactName(number),
+                                            callDate = dateFormat.format(Date(date)),
+                                            callTime = timeFormat.format(Date(date)),
                                             durationSeconds = duration,
                                             callType = typeStr,
-                                            timestamp = date,
-                                            isSynced = false
+                                            callFingerprint = fingerprint
                                         )
-                                        break // Found the most recent matching call!
+                                        
+                                        callDao.insertTrackedCallSession(verifiedSession)
+                                        matched = true
                                     }
                                 }
                             }
                         }
-
-                        if (matchedCall != null) {
-                            callDao.insertCalls(listOf(matchedCall!!))
-                            // Clear the pending number so we don't process it again
-                            prefs.edit()
-                                .remove("pending_call_number")
-                                .remove("pending_call_time")
-                                .apply()
-                        } else {
-                            // Wait for system to write to CallLog, do not clear
-                        }
-                    } catch (e: SecurityException) {
-                        e.printStackTrace()
-                        // Without READ_CALL_LOG permission, fallback sync is disabled.
-                        // We still clear the pending number so we don't keep trying and failing
-                        prefs.edit()
-                            .remove("pending_call_number")
-                            .remove("pending_call_time")
-                            .apply()
-                    } catch (e: Exception) {
-                        e.printStackTrace()
                     }
                 }
 
-                // Now sync any unsynced calls from Room
-                val unsyncedCalls = callDao.getUnsyncedCalls()
-                if (unsyncedCalls.isNotEmpty()) {
-                    val dtos = unsyncedCalls.map {
+                // 2. Sync verified sessions
+                val unsyncedSessions = callDao.getUnsyncedSessions()
+                if (unsyncedSessions.isNotEmpty()) {
+                    val dtos = unsyncedSessions.map {
                         SyncCallDto(
-                            clientPhoneHash = it.clientPhoneHash,
-                            durationSeconds = it.durationSeconds,
-                            callType = it.callType,
-                            timestamp = it.timestamp,
-                            callFingerprint = it.callFingerprint,
+                            clientPhoneHash = it.phoneNumber, // Server expects unhashed phone now per latest changes
+                            durationSeconds = it.durationSeconds ?: 0,
+                            callType = it.callType ?: "OUTGOING",
+                            timestamp = it.startedAt,
+                            callFingerprint = it.callFingerprint ?: "NO_FINGERPRINT",
                             isVelstrackCall = true
                         )
                     }
@@ -203,8 +215,8 @@ class EmployeeDashboardViewModel @Inject constructor(
                     val response = apiService.syncCalls(request)
 
                     if (response.isSuccessful && response.body()?.success == true) {
-                        val syncedIds = unsyncedCalls.map { it.id }
-                        callDao.markAsSynced(syncedIds)
+                        val syncedIds = unsyncedSessions.map { it.sessionId }
+                        callDao.markSessionsAsSynced(syncedIds)
                     }
                 }
             } catch (e: Exception) {
@@ -212,41 +224,7 @@ class EmployeeDashboardViewModel @Inject constructor(
             }
         }
         
-        // After synchronous sync, reload dashboard
         loadDashboard()
-    }
-
-    fun logManualCallSession(phoneNumber: String, durationSeconds: Int) {
-        viewModelScope.launch(Dispatchers.IO) {
-            try {
-                val employeeId = sessionManager.getUserId().firstOrNull() ?: "UNKNOWN_EMP"
-                val date = System.currentTimeMillis()
-                val normalizedDbNumber = phoneNumber.replace(Regex("[^0-9+]"), "")
-
-                val rawFingerprint = "${employeeId}${normalizedDbNumber}${date}${durationSeconds}"
-                val digest = java.security.MessageDigest.getInstance("SHA-256")
-                val hashBytes = digest.digest(rawFingerprint.toByteArray(Charsets.UTF_8))
-                val fingerprint = hashBytes.joinToString("") { "%02x".format(it) }
-
-                val id = "${hashPhoneNumber(phoneNumber)}_${date}"
-                val matchedCall = CallEntity(
-                    id = id,
-                    callFingerprint = fingerprint,
-                    clientPhoneHash = hashPhoneNumber(phoneNumber),
-                    durationSeconds = durationSeconds,
-                    callType = "OUTGOING",
-                    timestamp = date,
-                    isSynced = false
-                )
-
-                callDao.insertCalls(listOf(matchedCall))
-                
-                // Immediately sync the call and load dashboard
-                syncCallsNowAndLoad()
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
-        }
     }
 
     suspend fun exportCallsToExcel(): String? {

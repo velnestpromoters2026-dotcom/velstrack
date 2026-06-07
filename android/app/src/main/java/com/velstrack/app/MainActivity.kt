@@ -14,30 +14,14 @@ import kotlinx.coroutines.flow.asSharedFlow
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
-    companion object {
-        private val _callActionFlow = MutableSharedFlow<String>(extraBufferCapacity = 1)
-        val callActionFlow = _callActionFlow.asSharedFlow()
-    }
+    // Removed callActionFlow
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        handleIntent(intent)
         setContent {
             VelstrackTheme {
                 RootNavGraph()
             }
-        }
-    }
-
-    override fun onNewIntent(intent: Intent) {
-        super.onNewIntent(intent)
-        handleIntent(intent)
-    }
-
-    private fun handleIntent(intent: Intent?) {
-        if (intent?.getStringExtra("call_action") == "show_active_call") {
-            val number = intent.getStringExtra("call_number") ?: "Unknown"
-            _callActionFlow.tryEmit(number)
         }
     }
 }

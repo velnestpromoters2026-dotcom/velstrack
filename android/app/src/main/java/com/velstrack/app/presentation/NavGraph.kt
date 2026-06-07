@@ -8,7 +8,6 @@ import com.velstrack.app.presentation.auth.LoginScreen
 import com.velstrack.app.presentation.splash.SplashScreen
 import com.velstrack.app.presentation.employee.EmployeeDashboardScreen
 import com.velstrack.app.presentation.employee.dialer.DialerScreen
-import com.velstrack.app.presentation.employee.dialer.ActiveCallScreen
 import com.velstrack.app.presentation.admin.AdminMainScreen
 import com.velstrack.app.presentation.admin.employee.AddEmployeeScreen
 
@@ -23,9 +22,7 @@ fun RootNavGraph() {
     val navController = rememberNavController()
 
     androidx.compose.runtime.LaunchedEffect(Unit) {
-        com.velstrack.app.MainActivity.callActionFlow.collect { number ->
-            navController.navigate("active_call/$number")
-        }
+        // Removed callActionFlow
     }
 
     NavHost(navController = navController, startDestination = "splash") {
@@ -86,21 +83,7 @@ fun RootNavGraph() {
 
         composable("dialer") {
             DialerScreen(
-                onNavigateBack = { navController.popBackStack() },
-                onNavigateToActiveCall = { number ->
-                    navController.navigate("active_call/$number")
-                }
-            )
-        }
-
-        composable("active_call/{number}") { backStackEntry ->
-            val number = backStackEntry.arguments?.getString("number") ?: "Unknown"
-            val context = androidx.compose.ui.platform.LocalContext.current
-            ActiveCallScreen(
-                phoneNumber = number,
-                onCallEnded = { 
-                    navController.popBackStack("employee_dashboard", false)
-                }
+                onNavigateBack = { navController.popBackStack() }
             )
         }
 

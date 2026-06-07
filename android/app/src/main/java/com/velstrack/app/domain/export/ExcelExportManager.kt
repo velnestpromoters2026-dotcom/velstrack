@@ -23,8 +23,8 @@ class ExcelExportManager @Inject constructor(
 ) {
     suspend fun exportCallsToExcel(): String? = withContext(Dispatchers.IO) {
         try {
-            val calls = callDao.getAllCalls()
-            if (calls.isEmpty()) return@withContext null
+            val sessions = callDao.getAllVerifiedSessions()
+            if (sessions.isEmpty()) return@withContext null
             
             val timestamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
             val fileName = "Velstrack_Calls_$timestamp.xlsx"
@@ -38,22 +38,33 @@ class ExcelExportManager @Inject constructor(
             val wb = Workbook(os, "Velstrack", "1.0")
             val ws = wb.newWorksheet("Call Logs")
             
-            ws.value(0, 0, "Name")
-            ws.value(0, 1, "Number")
-            ws.value(0, 2, "Date")
-            ws.value(0, 3, "Time")
+            ws.value(0, 0, "Employee ID")
+            ws.value(0, 1, "Phone Number")
+            ws.value(0, 2, "Contact Name")
+            ws.value(0, 3, "Date")
+            ws.value(0, 4, "Time")
+            ws.value(0, 5, "Duration")
+            ws.value(0, 6, "Call Type")
+            ws.value(0, 7, "Status")
             
             var row = 1
-            for (call in calls) {
-                ws.value(row, 0, call.contactName)
-                ws.value(row, 1, call.clientPhoneHash)
+            for (session in sessions) {
+                ws.value(row, 0, session.employeeId)
+                ws.value(row, 1, session.phoneNumber)
+                ws.value(row, 2, session.contactName ?: "Unknown")
+                ws.value(row, 3, session.callDate ?: "")
+                ws.value(row, 4, session.callTime ?: "")
                 
-                val dateParts = call.readableDate.split(" ")
-                val dateStr = if (dateParts.isNotEmpty()) dateParts[0] else ""
-                val timeStr = if (dateParts.size > 1) dateParts[1] else ""
+                val duration = session.durationSeconds ?: 0
+                val durationStr = when {
+                    duration < 60 -> "${duration}s"
+                    duration < 3600 -> "${duration / 60}m ${duration % 60}s"
+                    else -> "${duration / 3600}h ${(duration % 3600) / 60}m"
+                }
                 
-                ws.value(row, 2, dateStr)
-                ws.value(row, 3, timeStr)
+                ws.value(row, 5, durationStr)
+                ws.value(row, 6, session.callType ?: "OUTGOING")
+                ws.value(row, 7, session.status)
                 row++
             }
             
