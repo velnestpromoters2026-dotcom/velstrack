@@ -12,7 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.velstrack.app.core.theme.ElectricIndigo
+import com.velstrack.app.core.theme.PureWhite
 
 @Composable
 fun EmptyStateCard(
@@ -31,7 +31,7 @@ fun EmptyStateCard(
             Icon(
                 imageVector = icon,
                 contentDescription = "Empty",
-                tint = ElectricIndigo,
+                tint = PureWhite,
                 modifier = Modifier.size(64.dp)
             )
             Spacer(modifier = Modifier.height(24.dp))

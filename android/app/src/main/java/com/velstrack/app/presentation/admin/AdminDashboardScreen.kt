@@ -16,9 +16,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.velstrack.app.core.theme.DeepSpaceBlack
-import com.velstrack.app.core.theme.ElectricIndigo
-import com.velstrack.app.core.theme.NeonCyan
+import com.velstrack.app.core.theme.AbsoluteBlack
+import com.velstrack.app.core.theme.PureWhite
+import com.velstrack.app.core.theme.MetallicSilver
 import com.velstrack.app.core.theme.RoseDanger
 import com.velstrack.app.core.util.UiState
 import com.velstrack.app.presentation.auth.AuthViewModel
@@ -37,7 +37,7 @@ fun AdminOverviewTab(
                 is UiState.Loading -> {
                     CircularProgressIndicator(
                         modifier = Modifier.align(Alignment.Center),
-                        color = ElectricIndigo
+                        color = PureWhite
                     )
                 }
                 is UiState.Empty -> {
@@ -87,7 +87,7 @@ fun AdminOverviewTab(
                                     trend = "${data.totalEmployees ?: 0} total registered",
                                     isPositive = true,
                                     icon = Icons.Default.Person,
-                                    iconTint = ElectricIndigo,
+                                    iconTint = PureWhite,
                                     modifier = Modifier.weight(1f)
                                 )
                                 
@@ -97,7 +97,7 @@ fun AdminOverviewTab(
                                     trend = "Securely backed up",
                                     isPositive = true,
                                     icon = Icons.Default.List,
-                                    iconTint = NeonCyan,
+                                    iconTint = PureWhite,
                                     modifier = Modifier.weight(1f)
                                 )
                             }

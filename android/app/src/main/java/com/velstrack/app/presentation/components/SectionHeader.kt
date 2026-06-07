@@ -31,7 +31,7 @@ fun SectionHeader(
                 Text(
                     text = actionText,
                     style = MaterialTheme.typography.labelMedium,
-                    color = com.velstrack.app.core.theme.NeonCyan
+                    color = com.velstrack.app.core.theme.PureWhite
                 )
             }
         }

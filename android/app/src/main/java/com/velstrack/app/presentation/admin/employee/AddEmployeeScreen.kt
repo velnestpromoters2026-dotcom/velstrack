@@ -12,10 +12,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.velstrack.app.core.theme.DeepSpaceBlack
+import com.velstrack.app.core.theme.AbsoluteBlack
 import com.velstrack.app.core.theme.GlassBorder
 import com.velstrack.app.core.theme.GlassSurface
-import com.velstrack.app.core.theme.NeonCyan
+import com.velstrack.app.core.theme.PureWhite
 import com.velstrack.app.presentation.components.GradientButton
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -48,7 +48,7 @@ fun AddEmployeeScreen(
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = DeepSpaceBlack,
+                    containerColor = AbsoluteBlack,
                     titleContentColor = MaterialTheme.colorScheme.onSurface,
                     navigationIconContentColor = MaterialTheme.colorScheme.onSurface
                 )
@@ -58,7 +58,7 @@ fun AddEmployeeScreen(
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .background(DeepSpaceBlack)
+                .background(AbsoluteBlack)
                 .padding(paddingValues)
                 .padding(24.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -80,7 +80,7 @@ fun AddEmployeeScreen(
                     label = { Text("Full Name") },
                     modifier = Modifier.fillMaxWidth(),
                     colors = TextFieldDefaults.outlinedTextFieldColors(
-                        focusedBorderColor = NeonCyan,
+                        focusedBorderColor = PureWhite,
                         unfocusedBorderColor = GlassBorder,
                         containerColor = GlassSurface
                     ),
@@ -94,7 +94,7 @@ fun AddEmployeeScreen(
                     label = { Text("Work Email") },
                     modifier = Modifier.fillMaxWidth(),
                     colors = TextFieldDefaults.outlinedTextFieldColors(
-                        focusedBorderColor = NeonCyan,
+                        focusedBorderColor = PureWhite,
                         unfocusedBorderColor = GlassBorder,
                         containerColor = GlassSurface
                     ),
@@ -108,7 +108,7 @@ fun AddEmployeeScreen(
                     label = { Text("Phone Number") },
                     modifier = Modifier.fillMaxWidth(),
                     colors = TextFieldDefaults.outlinedTextFieldColors(
-                        focusedBorderColor = NeonCyan,
+                        focusedBorderColor = PureWhite,
                         unfocusedBorderColor = GlassBorder,
                         containerColor = GlassSurface
                     ),
@@ -122,7 +122,7 @@ fun AddEmployeeScreen(
                     label = { Text("Initial Password") },
                     modifier = Modifier.fillMaxWidth(),
                     colors = TextFieldDefaults.outlinedTextFieldColors(
-                        focusedBorderColor = NeonCyan,
+                        focusedBorderColor = PureWhite,
                         unfocusedBorderColor = GlassBorder,
                         containerColor = GlassSurface
                     ),

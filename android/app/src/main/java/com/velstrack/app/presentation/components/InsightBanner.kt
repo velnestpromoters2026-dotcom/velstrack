@@ -27,8 +27,8 @@ fun InsightBanner(
             .background(
                 brush = Brush.horizontalGradient(
                     colors = listOf(
-                        com.velstrack.app.core.theme.ElectricIndigo.copy(alpha = 0.2f),
-                        com.velstrack.app.core.theme.NeonCyan.copy(alpha = 0.1f)
+                        com.velstrack.app.core.theme.PureWhite.copy(alpha = 0.2f),
+                        com.velstrack.app.core.theme.PureWhite.copy(alpha = 0.1f)
                     )
                 )
             )
@@ -38,7 +38,7 @@ fun InsightBanner(
             Icon(
                 imageVector = Icons.Default.Info,
                 contentDescription = "Insight",
-                tint = com.velstrack.app.core.theme.NeonCyan,
+                tint = com.velstrack.app.core.theme.PureWhite,
                 modifier = Modifier.size(24.dp)
             )
             Spacer(modifier = Modifier.width(12.dp))

@@ -21,8 +21,8 @@ fun GradientButton(
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
     colors: List<Color> = listOf(
-        com.velstrack.app.core.theme.ElectricIndigo,
-        com.velstrack.app.core.theme.NeonCyan
+        com.velstrack.app.core.theme.PureWhite,
+        com.velstrack.app.core.theme.PureWhite
     )
 ) {
     Button(

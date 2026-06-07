@@ -56,7 +56,7 @@ fun ActivityTimeline(
                             .size(14.dp)
                             .clip(CircleShape)
                             .background(
-                                if (item.isHighlighted) com.velstrack.app.core.theme.NeonCyan 
+                                if (item.isHighlighted) com.velstrack.app.core.theme.PureWhite 
                                 else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
                             )
                     )
@@ -68,7 +68,7 @@ fun ActivityTimeline(
                                 .background(
                                     Brush.verticalGradient(
                                         colors = listOf(
-                                            if (item.isHighlighted) com.velstrack.app.core.theme.NeonCyan else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f),
+                                            if (item.isHighlighted) com.velstrack.app.core.theme.PureWhite else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f),
                                             MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.1f)
                                         )
                                     )
@@ -114,15 +114,15 @@ fun ActivityTimeline(
                         Text(
                             text = item.duration,
                             style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
-                            color = com.velstrack.app.core.theme.NeonCyan
+                            color = com.velstrack.app.core.theme.PureWhite
                         )
                     }
                     Spacer(modifier = Modifier.height(4.dp))
                     if (item.isSynced) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text("Synced", style = MaterialTheme.typography.labelSmall, color = com.velstrack.app.core.theme.NeonCyan.copy(alpha = 0.7f))
+                            Text("Synced", style = MaterialTheme.typography.labelSmall, color = com.velstrack.app.core.theme.PureWhite.copy(alpha = 0.7f))
                             Spacer(modifier = Modifier.width(4.dp))
-                            Icon(Icons.Default.CheckCircle, contentDescription = "Synced", tint = com.velstrack.app.core.theme.NeonCyan, modifier = Modifier.size(10.dp))
+                            Icon(Icons.Default.CheckCircle, contentDescription = "Synced", tint = com.velstrack.app.core.theme.PureWhite, modifier = Modifier.size(10.dp))
                         }
                     }
                 }

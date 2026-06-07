@@ -28,7 +28,7 @@ fun AdminTeamTab(viewModel: AdminViewModel, onNavigateToAddEmployee: () -> Unit)
 
     Box(modifier = Modifier.fillMaxSize()) {
         when (state) {
-            is UiState.Loading -> CircularProgressIndicator(modifier = Modifier.align(Alignment.Center), color = NeonCyan)
+            is UiState.Loading -> CircularProgressIndicator(modifier = Modifier.align(Alignment.Center), color = PureWhite)
             is UiState.Empty -> {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     EmptyStateCard(
@@ -66,10 +66,10 @@ fun AdminTeamTab(viewModel: AdminViewModel, onNavigateToAddEmployee: () -> Unit)
                                     modifier = Modifier
                                         .size(48.dp)
                                         .clip(CircleShape)
-                                        .background(ElectricIndigo.copy(alpha = 0.2f)),
+                                        .background(PureWhite.copy(alpha = 0.2f)),
                                     contentAlignment = Alignment.Center
                                 ) {
-                                    Icon(imageVector = Icons.Default.Person, contentDescription = null, tint = ElectricIndigo)
+                                    Icon(imageVector = Icons.Default.Person, contentDescription = null, tint = PureWhite)
                                 }
                                 Spacer(modifier = Modifier.width(16.dp))
                                 Column(modifier = Modifier.weight(1f)) {
@@ -89,7 +89,7 @@ fun AdminTeamTab(viewModel: AdminViewModel, onNavigateToAddEmployee: () -> Unit)
 
         FloatingActionButton(
             onClick = onNavigateToAddEmployee,
-            containerColor = ElectricIndigo,
+            containerColor = PureWhite,
             contentColor = MaterialTheme.colorScheme.onSurface,
             modifier = Modifier.align(Alignment.BottomEnd).padding(24.dp)
         ) {
@@ -111,7 +111,7 @@ fun AdminTargetsTab(viewModel: AdminViewModel) {
 
     Box(modifier = Modifier.fillMaxSize().padding(16.dp)) {
         when (state) {
-            is UiState.Loading -> CircularProgressIndicator(modifier = Modifier.align(Alignment.Center), color = NeonCyan)
+            is UiState.Loading -> CircularProgressIndicator(modifier = Modifier.align(Alignment.Center), color = PureWhite)
             is UiState.Empty -> {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     EmptyStateCard(
@@ -145,13 +145,13 @@ fun AdminTargetsTab(viewModel: AdminViewModel) {
                                 }
                                 Spacer(modifier = Modifier.height(8.dp))
                                 Text("Goal: ${target.targetValue} Calls", color = MaterialTheme.colorScheme.onSurface)
-                                Text("Achieved: ${target.achievedValue}", color = NeonCyan)
+                                Text("Achieved: ${target.achievedValue}", color = PureWhite)
                                 
                                 val progress = if (target.targetValue > 0) target.achievedValue.toFloat() / target.targetValue else 0f
                                 LinearProgressIndicator(
                                     progress = progress,
                                     modifier = Modifier.fillMaxWidth().height(8.dp).padding(top = 8.dp),
-                                    color = ElectricIndigo,
+                                    color = PureWhite,
                                     trackColor = MaterialTheme.colorScheme.surfaceVariant
                                 )
                             }
@@ -164,8 +164,8 @@ fun AdminTargetsTab(viewModel: AdminViewModel) {
 
         FloatingActionButton(
             onClick = { showAddDialog = true },
-            containerColor = NeonCyan,
-            contentColor = DeepSpaceBlack,
+            containerColor = PureWhite,
+            contentColor = AbsoluteBlack,
             modifier = Modifier.align(Alignment.BottomEnd).padding(24.dp)
         ) {
             Icon(imageVector = Icons.Default.Add, contentDescription = "Add Target")
@@ -198,7 +198,7 @@ fun AdminCampaignsTab(viewModel: AdminViewModel) {
 
     Box(modifier = Modifier.fillMaxSize().padding(16.dp)) {
         when (metaStatusState) {
-            is UiState.Loading -> CircularProgressIndicator(modifier = Modifier.align(Alignment.Center), color = NeonCyan)
+            is UiState.Loading -> CircularProgressIndicator(modifier = Modifier.align(Alignment.Center), color = PureWhite)
             is UiState.Error -> {
                 ErrorStateCard(message = (metaStatusState as UiState.Error).message, onRetry = { viewModel.loadMetaStatus() })
             }
@@ -213,7 +213,7 @@ fun AdminCampaignsTab(viewModel: AdminViewModel) {
                         GlassCard {
                             Column {
                                 Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Icon(Icons.Default.Info, contentDescription = null, tint = NeonCyan)
+                                    Icon(Icons.Default.Info, contentDescription = null, tint = PureWhite)
                                     Spacer(modifier = Modifier.width(8.dp))
                                     Text(text = "Meta Connection State", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
                                 }
@@ -239,7 +239,7 @@ fun AdminCampaignsTab(viewModel: AdminViewModel) {
                                     Column(modifier = Modifier.padding(8.dp)) {
                                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                                             Text(text = campaign.campaignName, style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
-                                            Text(text = campaign.status, style = MaterialTheme.typography.labelMedium, color = if (campaign.status == "ACTIVE") NeonCyan else MaterialTheme.colorScheme.onSurfaceVariant)
+                                            Text(text = campaign.status, style = MaterialTheme.typography.labelMedium, color = if (campaign.status == "ACTIVE") PureWhite else MaterialTheme.colorScheme.onSurfaceVariant)
                                         }
                                         Spacer(modifier = Modifier.height(16.dp))
                                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
@@ -278,7 +278,7 @@ fun AdminAnalyticsTab(viewModel: AdminViewModel) {
 
     Box(modifier = Modifier.fillMaxSize().padding(16.dp)) {
         when (state) {
-            is UiState.Loading -> CircularProgressIndicator(modifier = Modifier.align(Alignment.Center), color = NeonCyan)
+            is UiState.Loading -> CircularProgressIndicator(modifier = Modifier.align(Alignment.Center), color = PureWhite)
             is UiState.Error -> ErrorStateCard(message = (state as UiState.Error).message, onRetry = { viewModel.loadAnalytics() })
             is UiState.Success -> {
                 val data = (state as UiState.Success).data
@@ -300,7 +300,7 @@ fun AdminAnalyticsTab(viewModel: AdminViewModel) {
                                         LinearProgressIndicator(
                                             progress = day.calls / 100f,
                                             modifier = Modifier.weight(1f).height(12.dp).clip(CircleShape),
-                                            color = NeonCyan,
+                                            color = PureWhite,
                                             trackColor = MaterialTheme.colorScheme.surfaceVariant
                                         )
                                         Spacer(modifier = Modifier.width(8.dp))
@@ -319,10 +319,10 @@ fun AdminAnalyticsTab(viewModel: AdminViewModel) {
                         GlassCard {
                             Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                                 Box(
-                                    modifier = Modifier.size(40.dp).clip(CircleShape).background(DeepSpaceBlack),
+                                    modifier = Modifier.size(40.dp).clip(CircleShape).background(AbsoluteBlack),
                                     contentAlignment = Alignment.Center
                                 ) {
-                                    Text(rank.name.first().toString(), color = ElectricIndigo, fontWeight = FontWeight.Bold)
+                                    Text(rank.name.first().toString(), color = PureWhite, fontWeight = FontWeight.Bold)
                                 }
                                 Spacer(modifier = Modifier.width(16.dp))
                                 Column(modifier = Modifier.weight(1f)) {
@@ -330,7 +330,7 @@ fun AdminAnalyticsTab(viewModel: AdminViewModel) {
                                     Text("Progress: ${(rank.targetProgress * 100).toInt()}%", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelSmall)
                                 }
                                 Column(horizontalAlignment = Alignment.End) {
-                                    Text("${rank.callsToday} Calls", fontWeight = FontWeight.Bold, color = NeonCyan)
+                                    Text("${rank.callsToday} Calls", fontWeight = FontWeight.Bold, color = PureWhite)
                                     Icon(
                                         imageVector = if (rank.trend == "UP") Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
                                         contentDescription = rank.trend,

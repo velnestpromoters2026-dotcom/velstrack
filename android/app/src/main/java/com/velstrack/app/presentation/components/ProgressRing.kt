@@ -25,10 +25,10 @@ fun ProgressRing(
     size: Dp = 120.dp,
     strokeWidth: Dp = 12.dp,
     colors: List<Color> = listOf(
-        com.velstrack.app.core.theme.NeonCyan,
-        com.velstrack.app.core.theme.ElectricIndigo
+        com.velstrack.app.core.theme.PureWhite,
+        com.velstrack.app.core.theme.PureWhite
     ),
-    backgroundColor: Color = com.velstrack.app.core.theme.MidnightBlue
+    backgroundColor: Color = com.velstrack.app.core.theme.SurfaceGray
 ) {
     var animationPlayed by remember { mutableStateOf(false) }
     
