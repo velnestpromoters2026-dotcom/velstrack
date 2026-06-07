@@ -51,6 +51,18 @@ export const syncCalls = async (req, res) => {
                     $inc: { achievedValue: formattedCalls.length }
                 }
             );
+
+            // Mark targets as COMPLETED if they met the goal
+            await Target.updateMany(
+                {
+                    employeeId,
+                    status: 'ACTIVE',
+                    $expr: { $gte: ["$achievedValue", "$targetValue"] }
+                },
+                {
+                    $set: { status: 'COMPLETED' }
+                }
+            );
         }
         
         res.status(201).json({ 

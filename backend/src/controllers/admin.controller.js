@@ -227,34 +227,66 @@ export const updateTarget = async (req, res) => {
 
 export const getAnalytics = async (req, res) => {
     try {
-        // Return dummy dense analytics for charts
-        const dailyCalls = [
-            { date: 'Mon', calls: 45 },
-            { date: 'Tue', calls: 52 },
-            { date: 'Wed', calls: 38 },
-            { date: 'Thu', calls: 65 },
-            { date: 'Fri', calls: 48 }
-        ];
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
 
-        let employeeRanking = await User.find({ role: 'EMPLOYEE' }).select('profile email');
-        
-        // If no employees exist in DB, provide completely fake data so the chart isn't empty
-        if (employeeRanking.length === 0) {
-            employeeRanking = [
-                { _id: 'mock1', profile: { firstName: 'Sarah', lastName: 'Connor' } },
-                { _id: 'mock2', profile: { firstName: 'John', lastName: 'Wick' } },
-                { _id: 'mock3', profile: { firstName: 'James', lastName: 'Bond' } }
-            ];
+        // Aggregate daily calls for the last 7 days
+        const sevenDaysAgo = new Date();
+        sevenDaysAgo.setDate(today.getDate() - 6);
+        sevenDaysAgo.setHours(0, 0, 0, 0);
+
+        const callLogs = await CallLog.find({ timestamp: { $gte: sevenDaysAgo } });
+
+        const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+        const dailyCallsMap = {};
+        for (let i = 0; i < 7; i++) {
+            const d = new Date(sevenDaysAgo);
+            d.setDate(d.getDate() + i);
+            dailyCallsMap[days[d.getDay()]] = 0;
         }
 
-        // Add fake ranking data
-        const rankings = employeeRanking.map((emp, index) => ({
-            _id: emp._id.toString(),
-            name: (emp.profile?.firstName || 'Unknown') + ' ' + (emp.profile?.lastName || ''),
-            callsToday: Math.floor(Math.random() * 50) + 10,
-            targetProgress: Math.random(),
-            trend: Math.random() > 0.5 ? 'UP' : 'DOWN'
-        })).sort((a, b) => b.callsToday - a.callsToday);
+        callLogs.forEach(log => {
+            if (log.timestamp) {
+                const dayName = days[log.timestamp.getDay()];
+                if (dailyCallsMap[dayName] !== undefined) {
+                    dailyCallsMap[dayName]++;
+                }
+            }
+        });
+
+        const dailyCalls = Object.keys(dailyCallsMap).map(key => ({
+            date: key,
+            calls: dailyCallsMap[key]
+        }));
+
+        // Employee Rankings
+        const employees = await User.find({ role: 'EMPLOYEE' }).select('profile email');
+        
+        const activeTargets = await Target.find({
+            status: 'ACTIVE',
+            periodStart: { $lte: new Date() },
+            periodEnd: { $gte: new Date() }
+        });
+
+        const callsTodayLogs = await CallLog.find({ timestamp: { $gte: today } });
+
+        const rankings = employees.map(emp => {
+            const empCallsToday = callsTodayLogs.filter(log => log.employeeId && log.employeeId.toString() === emp._id.toString()).length;
+            const target = activeTargets.find(t => t.employeeId.toString() === emp._id.toString());
+            
+            let targetProgress = 0;
+            if (target && target.targetValue > 0) {
+                targetProgress = Math.min(target.achievedValue / target.targetValue, 1);
+            }
+
+            return {
+                _id: emp._id.toString(),
+                name: (emp.profile?.firstName || 'Unknown') + ' ' + (emp.profile?.lastName || ''),
+                callsToday: empCallsToday,
+                targetProgress: targetProgress,
+                trend: empCallsToday > 0 ? 'UP' : 'DOWN'
+            };
+        }).sort((a, b) => b.callsToday - a.callsToday);
 
         res.json({
             success: true,
@@ -264,6 +296,27 @@ export const getAnalytics = async (req, res) => {
             }
         });
     } catch (error) {
+        console.error('Analytics Error:', error);
         res.status(500).json({ success: false, message: 'Failed to fetch analytics' });
+    }
+};
+
+export const getCalls = async (req, res) => {
+    try {
+        const calls = await CallLog.find().sort({ timestamp: -1 }).populate('employeeId', 'profile.firstName profile.lastName email profile.phone');
+        
+        const formattedCalls = calls.map(c => ({
+            _id: c._id.toString(),
+            employeeName: c.employeeId ? `${c.employeeId.profile?.firstName || ''} ${c.employeeId.profile?.lastName || ''}`.trim() : 'Unknown',
+            clientPhone: c.clientPhoneHash || 'Unknown',
+            durationSeconds: c.durationSeconds || 0,
+            timestamp: c.timestamp,
+            callType: c.callType || 'UNKNOWN'
+        }));
+        
+        res.json({ success: true, data: formattedCalls });
+    } catch (error) {
+        console.error('Get Calls Error:', error);
+        res.status(500).json({ success: false, message: 'Failed to fetch calls' });
     }
 };

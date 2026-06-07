@@ -1,5 +1,5 @@
 import express from 'express';
-import { getDashboardStats, getEmployees, addEmployee, getMetaCampaigns, getTargets, createTarget, updateTarget, getAnalytics, getMetaStatus } from '../controllers/admin.controller.js';
+import { getDashboardStats, getEmployees, addEmployee, getMetaCampaigns, getTargets, createTarget, updateTarget, getAnalytics, getMetaStatus, getCalls } from '../controllers/admin.controller.js';
 import { protect, adminOnly } from '../middlewares/auth.middleware.js';
 
 const router = express.Router();
@@ -17,5 +17,6 @@ router.post('/targets', createTarget);
 router.patch('/targets/:id', updateTarget);
 
 router.get('/analytics', getAnalytics);
+router.get('/calls', getCalls);
 
 export default router;
