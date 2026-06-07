@@ -9,6 +9,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Build
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -88,13 +90,13 @@ fun AdminOverviewTab(
                                         onClick = { viewModel.loadDashboard() },
                                         modifier = Modifier.background(AbsoluteBlack, CircleShape)
                                     ) {
-                                        Icon(imageVector = androidx.compose.material.icons.Icons.Default.Refresh, contentDescription = "Reconnect/Refresh", tint = PureWhite)
+                                        Icon(imageVector = Icons.Default.Refresh, contentDescription = "Reconnect/Refresh", tint = PureWhite)
                                     }
                                     IconButton(
                                         onClick = { /* Check updates logic */ },
                                         modifier = Modifier.background(AbsoluteBlack, CircleShape)
                                     ) {
-                                        Icon(imageVector = androidx.compose.material.icons.Icons.Default.Build, contentDescription = "Check Updates", tint = PureWhite)
+                                        Icon(imageVector = Icons.Default.Build, contentDescription = "Check Updates", tint = PureWhite)
                                     }
                                 }
                             }
