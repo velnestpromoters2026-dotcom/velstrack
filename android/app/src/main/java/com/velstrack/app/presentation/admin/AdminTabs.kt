@@ -137,11 +137,24 @@ fun AdminTargetsTab(viewModel: AdminViewModel) {
                         Spacer(modifier = Modifier.height(16.dp))
                     }
                     items(targets) { target ->
+                        val isCompleted = target.status == "COMPLETED" || target.achievedValue >= target.targetValue
+                        
+                        if (isCompleted) {
+                            GlassCard(modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp)) {
+                                Row(modifier = Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
+                                    Icon(Icons.Default.CheckCircle, contentDescription = null, tint = EmeraldSuccess)
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Text("Target Completed! 🎉", color = EmeraldSuccess, fontWeight = FontWeight.Bold)
+                                }
+                            }
+                        }
+                        
                         GlassCard(modifier = Modifier.fillMaxWidth()) {
                             Column(modifier = Modifier.padding(8.dp)) {
                                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                                     Text(text = "Type: ${target.targetType}", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
-                                    Text(text = target.status, color = if(target.status == "ACTIVE") EmeraldSuccess else MaterialTheme.colorScheme.onSurfaceVariant)
+                                    val displayStatus = if (isCompleted) "COMPLETED" else target.status
+                                    Text(text = displayStatus, color = if(displayStatus == "COMPLETED") EmeraldSuccess else if(displayStatus == "ACTIVE") EmeraldSuccess else MaterialTheme.colorScheme.onSurfaceVariant)
                                 }
                                 Spacer(modifier = Modifier.height(8.dp))
                                 Text("Goal: ${target.targetValue} Calls", color = MaterialTheme.colorScheme.onSurface)

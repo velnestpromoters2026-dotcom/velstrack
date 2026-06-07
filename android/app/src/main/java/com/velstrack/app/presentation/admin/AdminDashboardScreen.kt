@@ -76,7 +76,7 @@ fun AdminOverviewTab(
                                 Column(modifier = Modifier.weight(1f)) {
                                     Text(
                                         text = "Analytics",
-                                        style = MaterialTheme.typography.displayLarge,
+                                        style = MaterialTheme.typography.headlineLarge,
                                         color = MaterialTheme.colorScheme.onSurface
                                     )
                                     Text(

@@ -10,6 +10,7 @@ import com.velstrack.app.data.remote.dto.AnalyticsDto
 import com.velstrack.app.data.remote.dto.TargetDto
 import com.velstrack.app.data.remote.dto.CreateTargetRequest
 import com.velstrack.app.data.remote.dto.MetaStatusDto
+import com.velstrack.app.data.remote.dto.CallLogDto
 import com.velstrack.app.domain.repository.AdminRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -39,6 +40,9 @@ class AdminViewModel @Inject constructor(
 
     private val _analyticsState = MutableStateFlow<UiState<AnalyticsDto>>(UiState.Loading)
     val analyticsState: StateFlow<UiState<AnalyticsDto>> = _analyticsState
+
+    private val _callsState = MutableStateFlow<UiState<List<CallLogDto>>>(UiState.Loading)
+    val callsState: StateFlow<UiState<List<CallLogDto>>> = _callsState
 
     init {
         loadDashboard()
@@ -142,6 +146,24 @@ class AdminViewModel @Inject constructor(
                     _analyticsState.value = UiState.Success(result.getOrNull()!!)
                 } else {
                     _analyticsState.value = UiState.Error(result.exceptionOrNull()?.message ?: "Unknown error")
+                }
+            }
+        }
+    }
+
+    fun loadCalls() {
+        _callsState.value = UiState.Loading
+        viewModelScope.launch {
+            repository.getCalls().collect { result ->
+                if (result.isSuccess) {
+                    val list = result.getOrNull()!!
+                    if (list.isEmpty()) {
+                        _callsState.value = UiState.Empty
+                    } else {
+                        _callsState.value = UiState.Success(list)
+                    }
+                } else {
+                    _callsState.value = UiState.Error(result.exceptionOrNull()?.message ?: "Unknown error")
                 }
             }
         }

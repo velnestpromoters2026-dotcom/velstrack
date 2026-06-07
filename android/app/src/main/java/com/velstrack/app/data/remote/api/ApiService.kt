@@ -84,6 +84,12 @@ data class EmployeeDashboardResponse(
     val data: EmployeeDashboardDto?
 ) : BaseResponse
 
+data class CallsResponse(
+    override val success: Boolean,
+    override val message: String,
+    val data: List<CallLogDto>?
+) : BaseResponse
+
 interface ApiService {
     
     @POST("auth/login")
@@ -124,4 +130,7 @@ interface ApiService {
 
     @GET("employee/dashboard")
     suspend fun getEmployeeDashboardStats(): Response<EmployeeDashboardResponse>
+
+    @GET("admin/calls")
+    suspend fun getCalls(): Response<CallsResponse>
 }

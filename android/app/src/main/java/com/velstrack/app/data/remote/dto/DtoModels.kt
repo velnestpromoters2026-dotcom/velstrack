@@ -100,3 +100,12 @@ data class MetaStatusDto(
     val state: String,
     val message: String
 )
+
+data class CallLogDto(
+    val _id: String,
+    val employeeName: String,
+    val clientPhone: String,
+    val durationSeconds: Int,
+    val timestamp: String,
+    val callType: String
+)

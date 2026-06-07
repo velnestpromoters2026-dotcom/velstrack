@@ -9,6 +9,7 @@ import com.velstrack.app.data.remote.dto.MetaStatusDto
 import com.velstrack.app.data.remote.dto.TargetDto
 import com.velstrack.app.data.remote.dto.CreateTargetRequest
 import com.velstrack.app.data.remote.dto.AnalyticsDto
+import com.velstrack.app.data.remote.dto.CallLogDto
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import com.velstrack.app.core.util.safeApiCall
@@ -70,6 +71,13 @@ class AdminRepository @Inject constructor(
     fun getAnalytics(): Flow<Result<AnalyticsDto>> = flow {
         emit(safeApiCall(
             apiCall = { apiService.getAnalytics() },
+            extractData = { it.data }
+        ))
+    }
+
+    fun getCalls(): Flow<Result<List<CallLogDto>>> = flow {
+        emit(safeApiCall(
+            apiCall = { apiService.getCalls() },
             extractData = { it.data }
         ))
     }
