@@ -10,6 +10,8 @@ import com.velstrack.app.presentation.employee.EmployeeDashboardScreen
 import com.velstrack.app.presentation.employee.dialer.DialerScreen
 import com.velstrack.app.presentation.admin.AdminMainScreen
 import com.velstrack.app.presentation.admin.employee.AddEmployeeScreen
+import com.velstrack.app.presentation.admin.tables.ActiveStaffScreen
+import com.velstrack.app.presentation.admin.tables.CallsSyncedScreen
 
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -96,12 +98,30 @@ fun RootNavGraph() {
                 },
                 onNavigateToAddEmployee = {
                     navController.navigate("add_employee")
+                },
+                onNavigateToActiveStaff = {
+                    navController.navigate("active_staff")
+                },
+                onNavigateToCallsSynced = {
+                    navController.navigate("calls_synced")
                 }
             )
         }
 
         composable("add_employee") {
             AddEmployeeScreen(
+                onBack = { navController.popBackStack() }
+            )
+        }
+        
+        composable("active_staff") {
+            ActiveStaffScreen(
+                onBack = { navController.popBackStack() }
+            )
+        }
+        
+        composable("calls_synced") {
+            CallsSyncedScreen(
                 onBack = { navController.popBackStack() }
             )
         }

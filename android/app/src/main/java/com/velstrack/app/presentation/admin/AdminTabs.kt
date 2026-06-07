@@ -90,10 +90,10 @@ fun AdminTeamTab(viewModel: AdminViewModel, onNavigateToAddEmployee: () -> Unit)
         FloatingActionButton(
             onClick = onNavigateToAddEmployee,
             containerColor = PureWhite,
-            contentColor = MaterialTheme.colorScheme.onSurface,
+            contentColor = AbsoluteBlack,
             modifier = Modifier.align(Alignment.BottomEnd).padding(24.dp)
         ) {
-            Icon(imageVector = Icons.Default.Add, contentDescription = "Add Employee")
+            Icon(imageVector = Icons.Default.Add, contentDescription = "Add Employee", tint = AbsoluteBlack)
         }
     }
 }
@@ -294,11 +294,12 @@ fun AdminAnalyticsTab(viewModel: AdminViewModel) {
                                 Text("Weekly Call Volume", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
                                 Spacer(modifier = Modifier.height(8.dp))
                                 // A simple visualization of daily calls using progress bars
+                                val maxCalls = data.dailyCalls.maxOfOrNull { it.calls }?.toFloat()?.coerceAtLeast(10f) ?: 10f
                                 data.dailyCalls.forEach { day ->
                                     Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
                                         Text(day.date, modifier = Modifier.width(40.dp), color = MaterialTheme.colorScheme.onSurfaceVariant)
                                         LinearProgressIndicator(
-                                            progress = day.calls / 100f,
+                                            progress = day.calls / maxCalls,
                                             modifier = Modifier.weight(1f).height(12.dp).clip(CircleShape),
                                             color = PureWhite,
                                             trackColor = MaterialTheme.colorScheme.surfaceVariant

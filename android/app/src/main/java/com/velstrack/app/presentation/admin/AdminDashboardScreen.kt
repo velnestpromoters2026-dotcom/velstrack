@@ -1,6 +1,8 @@
 package com.velstrack.app.presentation.admin
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
@@ -26,7 +28,9 @@ import com.velstrack.app.presentation.components.*
 
 @Composable
 fun AdminOverviewTab(
-    viewModel: AdminViewModel
+    viewModel: AdminViewModel,
+    onNavigateToActiveStaff: () -> Unit,
+    onNavigateToCallsSynced: () -> Unit
 ) {
     val dashboardState by viewModel.dashboardState.collectAsState()
 
@@ -62,17 +66,37 @@ fun AdminOverviewTab(
                         verticalArrangement = Arrangement.spacedBy(24.dp)
                     ) {
                         item {
-                            Column {
-                                Text(
-                                    text = "Analytics",
-                                    style = MaterialTheme.typography.displayLarge,
-                                    color = MaterialTheme.colorScheme.onSurface
-                                )
-                                Text(
-                                    text = "Executive performance metrics across all teams.",
-                                    style = MaterialTheme.typography.bodyLarge,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(
+                                        text = "Analytics",
+                                        style = MaterialTheme.typography.displayLarge,
+                                        color = MaterialTheme.colorScheme.onSurface
+                                    )
+                                    Text(
+                                        text = "Executive performance metrics across all teams.",
+                                        style = MaterialTheme.typography.bodyLarge,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+                                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                    IconButton(
+                                        onClick = { viewModel.loadDashboard() },
+                                        modifier = Modifier.background(AbsoluteBlack, CircleShape)
+                                    ) {
+                                        Icon(imageVector = androidx.compose.material.icons.Icons.Default.Refresh, contentDescription = "Reconnect/Refresh", tint = PureWhite)
+                                    }
+                                    IconButton(
+                                        onClick = { /* Check updates logic */ },
+                                        modifier = Modifier.background(AbsoluteBlack, CircleShape)
+                                    ) {
+                                        Icon(imageVector = androidx.compose.material.icons.Icons.Default.Build, contentDescription = "Check Updates", tint = PureWhite)
+                                    }
+                                }
                             }
                         }
 
@@ -88,7 +112,7 @@ fun AdminOverviewTab(
                                     isPositive = true,
                                     icon = Icons.Default.Person,
                                     iconTint = PureWhite,
-                                    modifier = Modifier.weight(1f)
+                                    modifier = Modifier.weight(1f).clickable { onNavigateToActiveStaff() }
                                 )
                                 
                                 KPIStatCard(
@@ -98,7 +122,7 @@ fun AdminOverviewTab(
                                     isPositive = true,
                                     icon = Icons.Default.List,
                                     iconTint = PureWhite,
-                                    modifier = Modifier.weight(1f)
+                                    modifier = Modifier.weight(1f).clickable { onNavigateToCallsSynced() }
                                 )
                             }
                         }
@@ -129,17 +153,7 @@ fun AdminOverviewTab(
                             }
                         }
 
-                        item {
-                            SectionHeader(title = "Team Management")
-                            Spacer(modifier = Modifier.height(16.dp))
-                            InsightBanner(message = "Manage employee access, track performance, and view call histories in the Team tab.")
-                        }
-
-                        item {
-                            SectionHeader(title = "Meta Analytics")
-                            Spacer(modifier = Modifier.height(16.dp))
-                            InsightBanner(message = "Meta Ads reporting requires campaign tracking access. Check the Campaigns tab.")
-                        }
+                        // Removed Banners
                     }
                 }
         }

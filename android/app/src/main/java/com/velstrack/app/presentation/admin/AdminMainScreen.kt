@@ -17,6 +17,8 @@ import com.velstrack.app.presentation.auth.AuthViewModel
 fun AdminMainScreen(
     onLogout: () -> Unit,
     onNavigateToAddEmployee: () -> Unit,
+    onNavigateToActiveStaff: () -> Unit,
+    onNavigateToCallsSynced: () -> Unit,
     viewModel: AdminViewModel = hiltViewModel(),
     authViewModel: AuthViewModel = hiltViewModel()
 ) {
@@ -74,7 +76,7 @@ fun AdminMainScreen(
                 .padding(paddingValues)
         ) {
             when (selectedTab) {
-                0 -> AdminOverviewTab(viewModel)
+                0 -> AdminOverviewTab(viewModel, onNavigateToActiveStaff, onNavigateToCallsSynced)
                 1 -> AdminTeamTab(viewModel, onNavigateToAddEmployee)
                 2 -> AdminTargetsTab(viewModel)
                 3 -> AdminCampaignsTab(viewModel)
