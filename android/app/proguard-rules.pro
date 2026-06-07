@@ -16,3 +16,6 @@
 -keepnames class okhttp3.** { *; }
 -keep class okio.** { *; }
 -keepnames class okio.** { *; }
+
+-keep class kotlin.coroutines.Continuation { *; }
+-keep class kotlinx.coroutines.** { *; }

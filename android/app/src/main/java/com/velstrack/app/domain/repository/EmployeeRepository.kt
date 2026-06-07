@@ -12,6 +12,9 @@ class EmployeeRepository @Inject constructor(
 ) {
 
     fun getDashboardStats(): Flow<Result<EmployeeDashboardDto>> = flow {
-        emit(safeApiCall { apiService.getEmployeeDashboardStats() })
+        emit(safeApiCall(
+            apiCall = { apiService.getEmployeeDashboardStats() },
+            extractData = { it.data }
+        ))
     }
 }

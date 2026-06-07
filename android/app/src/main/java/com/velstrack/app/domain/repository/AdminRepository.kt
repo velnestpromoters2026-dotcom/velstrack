@@ -19,34 +19,58 @@ class AdminRepository @Inject constructor(
 ) {
 
     fun getDashboardStats(): Flow<Result<AdminDashboardDto>> = flow {
-        emit(safeApiCall { apiService.getAdminDashboardStats() })
+        emit(safeApiCall(
+            apiCall = { apiService.getAdminDashboardStats() },
+            extractData = { it.data }
+        ))
     }
 
     fun getEmployees(): Flow<Result<List<EmployeeDto>>> = flow {
-        emit(safeApiCall { apiService.getEmployees() })
+        emit(safeApiCall(
+            apiCall = { apiService.getEmployees() },
+            extractData = { it.data }
+        ))
     }
 
     fun addEmployee(request: AddEmployeeRequest): Flow<Result<EmployeeDto>> = flow {
-        emit(safeApiCall { apiService.addEmployee(request) })
+        emit(safeApiCall(
+            apiCall = { apiService.addEmployee(request) },
+            extractData = { it.data }
+        ))
     }
 
     fun getMetaCampaigns(): Flow<Result<List<MetaCampaignDto>>> = flow {
-        emit(safeApiCall { apiService.getMetaCampaigns() })
+        emit(safeApiCall(
+            apiCall = { apiService.getMetaCampaigns() },
+            extractData = { it.data }
+        ))
     }
 
     fun getMetaStatus(): Flow<Result<MetaStatusDto>> = flow {
-        emit(safeApiCall { apiService.getMetaStatus() })
+        emit(safeApiCall(
+            apiCall = { apiService.getMetaStatus() },
+            extractData = { it.data }
+        ))
     }
 
     fun getTargets(): Flow<Result<List<TargetDto>>> = flow {
-        emit(safeApiCall { apiService.getTargets() })
+        emit(safeApiCall(
+            apiCall = { apiService.getTargets() },
+            extractData = { it.data }
+        ))
     }
 
     fun createTarget(request: CreateTargetRequest): Flow<Result<TargetDto>> = flow {
-        emit(safeApiCall { apiService.createTarget(request) })
+        emit(safeApiCall(
+            apiCall = { apiService.createTarget(request) },
+            extractData = { it.data }
+        ))
     }
 
     fun getAnalytics(): Flow<Result<AnalyticsDto>> = flow {
-        emit(safeApiCall { apiService.getAnalytics() })
+        emit(safeApiCall(
+            apiCall = { apiService.getAnalytics() },
+            extractData = { it.data }
+        ))
     }
 }

@@ -22,68 +22,67 @@ data class LoginRequest(
 data class AuthResponse(
     override val success: Boolean,
     override val message: String,
-    override val data: LoginResponse?
-) : ApiResponse<LoginResponse>
+    val data: LoginResponse?
+) : BaseResponse
 
 data class SimpleResponse(
     override val success: Boolean,
-    override val message: String,
-    override val data: Unit? = null
-) : ApiResponse<Unit>
+    override val message: String
+) : BaseResponse
 
 data class AdminDashboardResponse(
     override val success: Boolean,
     override val message: String,
-    override val data: AdminDashboardDto?
-) : ApiResponse<AdminDashboardDto>
+    val data: AdminDashboardDto?
+) : BaseResponse
 
 data class EmployeesResponse(
     override val success: Boolean,
     override val message: String,
-    override val data: List<EmployeeDto>?
-) : ApiResponse<List<EmployeeDto>>
+    val data: List<EmployeeDto>?
+) : BaseResponse
 
 data class EmployeeResponse(
     override val success: Boolean,
     override val message: String,
-    override val data: EmployeeDto?
-) : ApiResponse<EmployeeDto>
+    val data: EmployeeDto?
+) : BaseResponse
 
 data class MetaCampaignsResponse(
     override val success: Boolean,
     override val message: String,
-    override val data: List<MetaCampaignDto>?
-) : ApiResponse<List<MetaCampaignDto>>
+    val data: List<MetaCampaignDto>?
+) : BaseResponse
 
 data class MetaStatusResponse(
     override val success: Boolean,
     override val message: String,
-    override val data: MetaStatusDto?
-) : ApiResponse<MetaStatusDto>
+    val data: MetaStatusDto?
+) : BaseResponse
 
 data class TargetsResponse(
     override val success: Boolean,
     override val message: String,
-    override val data: List<TargetDto>?
-) : ApiResponse<List<TargetDto>>
+    val data: List<TargetDto>?
+) : BaseResponse
 
 data class TargetResponse(
     override val success: Boolean,
     override val message: String,
-    override val data: TargetDto?
-) : ApiResponse<TargetDto>
+    val data: TargetDto?
+) : BaseResponse
 
 data class AnalyticsResponse(
     override val success: Boolean,
     override val message: String,
-    override val data: AnalyticsDto?
-) : ApiResponse<AnalyticsDto>
+    val data: AnalyticsDto?
+) : BaseResponse
 
 data class EmployeeDashboardResponse(
     override val success: Boolean,
     override val message: String,
-    override val data: EmployeeDashboardDto?
-) : ApiResponse<EmployeeDashboardDto>
+    val data: EmployeeDashboardDto?
+) : BaseResponse
 
 interface ApiService {
     
