@@ -1,4 +1,5 @@
 import CallLog from '../models/CallLog.js';
+import Target from '../models/Target.js';
 
 export const syncCalls = async (req, res) => {
     const { calls } = req.body;
@@ -34,6 +35,22 @@ export const syncCalls = async (req, res) => {
             if (insertError.code !== 11000 && !insertError.message.includes('11000')) {
                 throw insertError;
             }
+        }
+
+        // Update active targets achieved count for the employee
+        if (formattedCalls.length > 0) {
+            const now = new Date();
+            await Target.updateMany(
+                {
+                    employeeId,
+                    status: 'ACTIVE',
+                    periodStart: { $lte: now },
+                    periodEnd: { $gte: now }
+                },
+                {
+                    $inc: { achievedValue: formattedCalls.length }
+                }
+            );
         }
         
         res.status(201).json({ 
