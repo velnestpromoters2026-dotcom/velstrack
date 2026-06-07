@@ -5,14 +5,14 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import retrofit2.Response
 
-suspend fun <T> safeApiCall(apiCall: suspend () -> Response<ApiResponse<T>>): Result<T> {
+suspend fun <T, R : ApiResponse<T>> safeApiCall(apiCall: suspend () -> Response<R>): Result<T> {
     return withContext(Dispatchers.IO) {
         try {
             val response = apiCall()
             if (response.isSuccessful) {
                 val body = response.body()
                 if (body != null && body.success && body.data != null) {
-                    Result.success(body.data)
+                    Result.success(body.data!!)
                 } else {
                     Result.failure(Exception(body?.message ?: "Unknown API Error"))
                 }
