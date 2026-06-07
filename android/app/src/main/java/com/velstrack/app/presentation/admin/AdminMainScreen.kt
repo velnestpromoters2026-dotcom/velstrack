@@ -27,9 +27,9 @@ fun AdminMainScreen(
             TopAppBar(
                 title = { Text("Admin Control", fontWeight = FontWeight.Bold) },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = DeepSpaceBlack,
-                    titleContentColor = MaterialTheme.colorScheme.onSurface,
-                    actionIconContentColor = RoseDanger
+                    containerColor = AbsoluteBlack,
+                    titleContentColor = PureWhite,
+                    actionIconContentColor = MetallicSilver
                 ),
                 actions = {
                     IconButton(onClick = {
@@ -43,8 +43,8 @@ fun AdminMainScreen(
         },
         bottomBar = {
             NavigationBar(
-                containerColor = MaterialTheme.colorScheme.surface,
-                contentColor = MaterialTheme.colorScheme.onSurfaceVariant
+                containerColor = AbsoluteBlack,
+                contentColor = MetallicSilver
             ) {
                 val items = listOf("Overview", "Team", "Targets", "Campaigns", "Analytics")
                 val icons = listOf(Icons.Default.Home, Icons.Default.Person, Icons.Default.CheckCircle, Icons.Default.Settings, Icons.Default.DateRange)
@@ -56,11 +56,11 @@ fun AdminMainScreen(
                         selected = selectedTab == index,
                         onClick = { selectedTab = index },
                         colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = NeonCyan,
-                            selectedTextColor = NeonCyan,
-                            indicatorColor = ElectricIndigo.copy(alpha = 0.2f),
-                            unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                            unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant
+                            selectedIconColor = AbsoluteBlack,
+                            selectedTextColor = PureWhite,
+                            indicatorColor = PureWhite,
+                            unselectedIconColor = MetallicSilver,
+                            unselectedTextColor = MetallicSilver
                         )
                     )
                 }
@@ -70,7 +70,7 @@ fun AdminMainScreen(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(DeepSpaceBlack)
+                .background(AbsoluteBlack)
                 .padding(paddingValues)
         ) {
             when (selectedTab) {

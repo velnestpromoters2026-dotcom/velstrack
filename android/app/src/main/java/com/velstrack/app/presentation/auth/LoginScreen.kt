@@ -2,9 +2,9 @@ package com.velstrack.app.presentation.auth
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.Icons
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -18,11 +18,13 @@ import android.widget.Toast
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.velstrack.app.core.theme.DeepSpaceBlack
+import androidx.compose.ui.res.painterResource
+import com.velstrack.app.R
+import com.velstrack.app.core.theme.AbsoluteBlack
 import com.velstrack.app.core.theme.GlassBorder
 import com.velstrack.app.core.theme.GlassSurface
-import com.velstrack.app.presentation.components.GlassCard
-import com.velstrack.app.presentation.components.GradientButton
+import com.velstrack.app.core.theme.PureWhite
+import com.velstrack.app.core.theme.MetallicSilver
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -47,103 +49,127 @@ fun LoginScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(DeepSpaceBlack)
-            .padding(24.dp),
+            .background(AbsoluteBlack)
+            .padding(32.dp),
         contentAlignment = Alignment.Center
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier.fillMaxWidth()
         ) {
-            // Brand Header
-            Text(
-                text = "VELSTRACK",
-                color = Color.White,
-                style = MaterialTheme.typography.headlineMedium.copy(letterSpacing = 4.sp, fontWeight = FontWeight.Black)
+            // New Metallic Logo
+            androidx.compose.foundation.Image(
+                painter = painterResource(id = R.drawable.velstrack_metallic_logo),
+                contentDescription = "Velstrack Logo",
+                modifier = Modifier.size(100.dp)
             )
+            
+            Spacer(modifier = Modifier.height(32.dp))
+
+            // Massive Header
+            Text(
+                text = "Hello there,\nWelcome",
+                color = PureWhite,
+                style = MaterialTheme.typography.displayLarge,
+                lineHeight = 60.sp,
+                modifier = Modifier.fillMaxWidth()
+            )
+            
+            Spacer(modifier = Modifier.height(8.dp))
+            
+            Text(
+                text = "Sign in to access your workspace.",
+                color = MetallicSilver,
+                style = MaterialTheme.typography.bodyLarge,
+                modifier = Modifier.fillMaxWidth()
+            )
+
             Spacer(modifier = Modifier.height(48.dp))
 
-            GlassCard(modifier = Modifier.fillMaxWidth()) {
-                Column(
-                    modifier = Modifier.padding(8.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
+            if (loginState is LoginState.Error) {
+                Text(
+                    text = (loginState as LoginState.Error).error,
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+            }
+            
+            OutlinedTextField(
+                value = email,
+                onValueChange = { email = it },
+                label = { Text("Email Address") },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                colors = TextFieldDefaults.outlinedTextFieldColors(
+                    focusedBorderColor = PureWhite,
+                    unfocusedBorderColor = GlassBorder,
+                    containerColor = GlassSurface,
+                    focusedLabelColor = PureWhite,
+                    unfocusedLabelColor = MetallicSilver
+                ),
+                shape = RoundedCornerShape(16.dp)
+            )
+            
+            Spacer(modifier = Modifier.height(16.dp))
+            
+            OutlinedTextField(
+                value = password,
+                onValueChange = { password = it },
+                label = { Text("Password") },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true,
+                visualTransformation = if (passwordVisible) androidx.compose.ui.text.input.VisualTransformation.None else PasswordVisualTransformation(),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                trailingIcon = {
+                    TextButton(onClick = { passwordVisible = !passwordVisible }) {
+                        Text(
+                            text = if (passwordVisible) "HIDE" else "SHOW",
+                            color = PureWhite,
+                            style = MaterialTheme.typography.labelSmall
+                        )
+                    }
+                },
+                colors = TextFieldDefaults.outlinedTextFieldColors(
+                    focusedBorderColor = PureWhite,
+                    unfocusedBorderColor = GlassBorder,
+                    containerColor = GlassSurface,
+                    focusedLabelColor = PureWhite,
+                    unfocusedLabelColor = MetallicSilver
+                ),
+                shape = RoundedCornerShape(16.dp)
+            )
+            
+            Spacer(modifier = Modifier.height(48.dp))
+            
+            if (loginState is LoginState.Loading) {
+                CircularProgressIndicator(color = PureWhite)
+            } else {
+                Button(
+                    onClick = { viewModel.login(email, password) },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(56.dp),
+                    shape = CircleShape,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = PureWhite,
+                        contentColor = AbsoluteBlack
+                    )
                 ) {
                     Text(
-                        text = "Sign in to your account",
-                        style = MaterialTheme.typography.titleLarge,
-                        color = MaterialTheme.colorScheme.onSurface
+                        text = "Login",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 18.sp
                     )
-                    Spacer(modifier = Modifier.height(32.dp))
-                    
-                    if (loginState is LoginState.Error) {
-                        Text(
-                            text = (loginState as LoginState.Error).error,
-                            color = MaterialTheme.colorScheme.error,
-                            style = MaterialTheme.typography.bodyMedium
-                        )
-                        Spacer(modifier = Modifier.height(16.dp))
-                    }
-                    
-                    OutlinedTextField(
-                        value = email,
-                        onValueChange = { email = it },
-                        label = { Text("Work Email") },
-                        modifier = Modifier.fillMaxWidth(),
-                        singleLine = true,
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-                        colors = TextFieldDefaults.outlinedTextFieldColors(
-                            focusedBorderColor = com.velstrack.app.core.theme.NeonCyan,
-                            unfocusedBorderColor = GlassBorder,
-                            containerColor = GlassSurface
-                        ),
-                        shape = RoundedCornerShape(12.dp)
-                    )
-                    
-                    Spacer(modifier = Modifier.height(16.dp))
-                    
-                    OutlinedTextField(
-                        value = password,
-                        onValueChange = { password = it },
-                        label = { Text("Password") },
-                        modifier = Modifier.fillMaxWidth(),
-                        singleLine = true,
-                        visualTransformation = if (passwordVisible) androidx.compose.ui.text.input.VisualTransformation.None else PasswordVisualTransformation(),
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                        trailingIcon = {
-                            TextButton(onClick = { passwordVisible = !passwordVisible }) {
-                                Text(
-                                    text = if (passwordVisible) "HIDE" else "SHOW",
-                                    color = com.velstrack.app.core.theme.NeonCyan,
-                                    style = MaterialTheme.typography.labelSmall
-                                )
-                            }
-                        },
-                        colors = TextFieldDefaults.outlinedTextFieldColors(
-                            focusedBorderColor = com.velstrack.app.core.theme.NeonCyan,
-                            unfocusedBorderColor = GlassBorder,
-                            containerColor = GlassSurface
-                        ),
-                        shape = RoundedCornerShape(12.dp)
-                    )
-                    
-                    Spacer(modifier = Modifier.height(32.dp))
-                    
-                    if (loginState is LoginState.Loading) {
-                        CircularProgressIndicator(color = com.velstrack.app.core.theme.NeonCyan)
-                    } else {
-                        GradientButton(
-                            text = "Continue",
-                            onClick = { viewModel.login(email, password) },
-                            modifier = Modifier.fillMaxWidth()
-                        )
-                    }
                 }
             }
             
             Spacer(modifier = Modifier.height(24.dp))
             
             if (isCheckingUpdate) {
-                CircularProgressIndicator(color = com.velstrack.app.core.theme.NeonCyan, modifier = Modifier.size(24.dp))
+                CircularProgressIndicator(color = PureWhite, modifier = Modifier.size(24.dp))
             } else {
                 TextButton(
                     onClick = {
@@ -160,7 +186,7 @@ fun LoginScreen(
                 ) {
                     Text(
                         text = "Check for Updates",
-                        color = Color.Gray,
+                        color = MetallicSilver,
                         style = MaterialTheme.typography.bodyMedium
                     )
                 }

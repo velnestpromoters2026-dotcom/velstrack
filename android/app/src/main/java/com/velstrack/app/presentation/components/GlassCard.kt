@@ -13,8 +13,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import com.velstrack.app.core.theme.ElevatedGray
 import com.velstrack.app.core.theme.GlassBorder
-import com.velstrack.app.core.theme.GlassSurface
 
 @Composable
 fun GlassCard(
@@ -23,24 +23,12 @@ fun GlassCard(
 ) {
     Box(
         modifier = modifier
-            .clip(RoundedCornerShape(16.dp))
-            .background(
-                brush = Brush.linearGradient(
-                    colors = listOf(
-                        GlassSurface,
-                        Color.Transparent
-                    )
-                )
-            )
+            .clip(RoundedCornerShape(24.dp))
+            .background(ElevatedGray)
             .border(
                 width = 1.dp,
-                brush = Brush.linearGradient(
-                    colors = listOf(
-                        GlassBorder,
-                        Color.Transparent
-                    )
-                ),
-                shape = RoundedCornerShape(16.dp)
+                color = GlassBorder,
+                shape = RoundedCornerShape(24.dp)
             )
             .padding(16.dp),
         content = content

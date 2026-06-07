@@ -11,15 +11,17 @@ import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 
 private val DarkColorScheme = darkColorScheme(
-    primary = ElectricIndigo,
-    secondary = NeonCyan,
-    background = DeepSpaceBlack,
-    surface = MidnightBlue,
+    primary = PureWhite, // Primary actions are white on black
+    secondary = MetallicSilver,
+    background = AbsoluteBlack,
+    surface = SurfaceGray,
     error = RoseDanger,
-    onPrimary = Color.White,
-    onSecondary = Color.Black,
-    onBackground = Color.White,
-    onSurface = Color.White,
+    onPrimary = AbsoluteBlack, // Text on primary white buttons should be black
+    onSecondary = AbsoluteBlack,
+    onBackground = PureWhite,
+    onSurface = PureWhite,
+    surfaceVariant = ElevatedGray,
+    onSurfaceVariant = DarkSilver
 )
 
 @Composable
@@ -28,14 +30,14 @@ fun VelstrackTheme(content: @Composable () -> Unit) {
     if (!view.isInEditMode) {
         SideEffect {
             val window = (view.context as Activity).window
-            window.statusBarColor = DeepSpaceBlack.toArgb()
+            window.statusBarColor = AbsoluteBlack.toArgb()
             WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = false
         }
     }
 
     MaterialTheme(
         colorScheme = DarkColorScheme,
-        typography = InterLikeTypography,
+        typography = ExecutiveTypography,
         content = content
     )
 }

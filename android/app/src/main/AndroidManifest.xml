@@ -16,8 +16,8 @@
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
         android:label="Velstrack"
-        android:icon="@mipmap/ic_launcher"
-        android:roundIcon="@mipmap/ic_launcher_round"
+        android:icon="@drawable/velstrack_metallic_logo"
+        android:roundIcon="@drawable/velstrack_metallic_logo"
         android:supportsRtl="true"
         android:theme="@style/Theme.Velstrack"
         tools:targetApi="31">

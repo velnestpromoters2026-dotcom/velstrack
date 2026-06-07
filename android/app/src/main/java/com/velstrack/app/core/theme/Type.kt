@@ -6,8 +6,8 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 
-// Using default SansSerif but heavily stylized to mimic Inter's executive SaaS look
-val InterLikeTypography = Typography(
+// Using default SansSerif but heavily stylized to mimic geometric fonts like Montserrat
+val ExecutiveTypography = Typography(
     displayLarge = TextStyle(
         fontFamily = FontFamily.SansSerif,
         fontWeight = FontWeight.Bold,

@@ -34,8 +34,9 @@ import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
-import com.velstrack.app.core.theme.DeepSpaceBlack
-import com.velstrack.app.core.theme.NeonCyan
+import com.velstrack.app.core.theme.AbsoluteBlack
+import com.velstrack.app.core.theme.PureWhite
+import com.velstrack.app.core.theme.MetallicSilver
 import com.velstrack.app.core.theme.RoseDanger
 import com.velstrack.app.core.util.UiState
 import com.velstrack.app.presentation.auth.AuthViewModel
@@ -111,9 +112,9 @@ fun EmployeeDashboardScreen(
             TopAppBar(
                 title = { Text("Workspace", fontWeight = FontWeight.Bold) },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = DeepSpaceBlack,
-                    titleContentColor = MaterialTheme.colorScheme.onSurface,
-                    actionIconContentColor = RoseDanger
+                    containerColor = AbsoluteBlack,
+                    titleContentColor = PureWhite,
+                    actionIconContentColor = MetallicSilver
                 ),
                 actions = {
                     if (hasPermission) {
@@ -127,7 +128,7 @@ fun EmployeeDashboardScreen(
                                 }
                             }
                         }) {
-                            Icon(imageVector = Icons.Default.Menu, contentDescription = "Export Excel", tint = NeonCyan)
+                            Icon(imageVector = Icons.Default.Menu, contentDescription = "Export Excel", tint = PureWhite)
                         }
                         IconButton(onClick = {
                             viewModel.checkForUpdates { found ->
@@ -138,14 +139,14 @@ fun EmployeeDashboardScreen(
                                 }
                             }
                         }) {
-                            Icon(imageVector = Icons.Default.Info, contentDescription = "Check for Updates", tint = NeonCyan)
+                            Icon(imageVector = Icons.Default.Info, contentDescription = "Check for Updates", tint = PureWhite)
                         }
                         IconButton(onClick = {
                             coroutineScope.launch {
                                 viewModel.syncCallsNowAndLoad()
                             }
                         }) {
-                            Icon(imageVector = Icons.Default.Refresh, contentDescription = "Refresh", tint = NeonCyan)
+                            Icon(imageVector = Icons.Default.Refresh, contentDescription = "Refresh", tint = PureWhite)
                         }
                     }
                     IconButton(onClick = {
@@ -161,8 +162,8 @@ fun EmployeeDashboardScreen(
             if (hasPermission) {
                 FloatingActionButton(
                     onClick = onNavigateToDialer,
-                    containerColor = NeonCyan,
-                    contentColor = DeepSpaceBlack
+                    containerColor = PureWhite,
+                    contentColor = AbsoluteBlack
                 ) {
                     Icon(Icons.Default.Call, contentDescription = "Open Dialer")
                 }
@@ -172,7 +173,7 @@ fun EmployeeDashboardScreen(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(DeepSpaceBlack)
+                .background(AbsoluteBlack)
                 .padding(paddingValues)
         ) {
             if (!hasPermission) {
@@ -190,7 +191,7 @@ fun EmployeeDashboardScreen(
                 is UiState.Loading -> {
                     CircularProgressIndicator(
                         modifier = Modifier.align(Alignment.Center),
-                        color = NeonCyan
+                        color = PureWhite
                     )
                 }
                 is UiState.Error -> {
@@ -239,7 +240,7 @@ fun EmployeeDashboardScreen(
                                     trend = data.callsTrend ?: "",
                                     isPositive = true,
                                     icon = Icons.Default.Call,
-                                    iconTint = NeonCyan,
+                                    iconTint = PureWhite,
                                     modifier = Modifier.weight(1f)
                                 )
                                 

@@ -33,8 +33,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
-import com.velstrack.app.core.theme.DeepSpaceBlack
-import com.velstrack.app.core.theme.NeonCyan
+import com.velstrack.app.core.theme.AbsoluteBlack
+import com.velstrack.app.core.theme.PureWhite
+import com.velstrack.app.core.theme.MetallicSilver
 import com.velstrack.app.core.theme.RoseDanger
 
 import androidx.compose.ui.text.input.TextFieldValue
@@ -120,9 +121,9 @@ fun DialerScreen(
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = DeepSpaceBlack,
-                    titleContentColor = MaterialTheme.colorScheme.onSurface,
-                    navigationIconContentColor = MaterialTheme.colorScheme.onSurface
+                    containerColor = AbsoluteBlack,
+                    titleContentColor = PureWhite,
+                    navigationIconContentColor = PureWhite
                 )
             )
         }
@@ -130,7 +131,7 @@ fun DialerScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background(DeepSpaceBlack)
+                .background(AbsoluteBlack)
                 .padding(paddingValues)
                 .padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -145,7 +146,7 @@ fun DialerScreen(
                     Icon(
                         imageVector = Icons.Default.Warning,
                         contentDescription = "Permission Required",
-                        tint = NeonCyan,
+                        tint = PureWhite,
                         modifier = Modifier.size(64.dp)
                     )
                     Spacer(modifier = Modifier.height(16.dp))
@@ -167,9 +168,9 @@ fun DialerScreen(
                         onClick = {
                             permissionLauncher.launch(arrayOf(Manifest.permission.CALL_PHONE, Manifest.permission.READ_CALL_LOG))
                         },
-                        colors = ButtonDefaults.buttonColors(containerColor = NeonCyan)
+                        colors = ButtonDefaults.buttonColors(containerColor = PureWhite)
                     ) {
-                        Text("Grant Permissions", color = Color.Black)
+                        Text("Grant Permissions", color = AbsoluteBlack)
                     }
                 }
             } else {
@@ -213,7 +214,7 @@ fun DialerScreen(
                             textAlign = TextAlign.Center
                         ),
                         singleLine = true,
-                        cursorBrush = SolidColor(NeonCyan),
+                        cursorBrush = SolidColor(PureWhite),
                         keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
                             keyboardType = androidx.compose.ui.text.input.KeyboardType.Phone
                         ),
@@ -301,16 +302,16 @@ fun DialerScreen(
                         }
                     }
                 }) {
-                    Text("Paste", color = NeonCyan)
+                    Text("Paste", color = PureWhite)
                 }
                 
                 TextButton(onClick = {
                     val intent = Intent(Intent.ACTION_PICK, ContactsContract.CommonDataKinds.Phone.CONTENT_URI)
                     contactPickerLauncher.launch(intent)
                 }) {
-                    Icon(Icons.Default.Person, contentDescription = "Contacts", modifier = Modifier.size(20.dp), tint = NeonCyan)
+                    Icon(Icons.Default.Person, contentDescription = "Contacts", modifier = Modifier.size(20.dp), tint = PureWhite)
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Contacts", color = NeonCyan)
+                    Text("Contacts", color = PureWhite)
                 }
             }
 
@@ -343,9 +344,10 @@ fun DialerScreen(
                             }
                         }
                     },
-                    containerColor = NeonCyan,
-                    contentColor = DeepSpaceBlack,
-                    modifier = Modifier.size(72.dp),
+                    containerColor = PureWhite,
+                    contentColor = AbsoluteBlack,
+                    modifier = Modifier.size(72.dp)
+                        .fillMaxWidth(0.6f), // Make it wide / pill shaped
                     shape = CircleShape
                 ) {
                     Icon(Icons.Default.Call, contentDescription = "Call", modifier = Modifier.size(36.dp))
@@ -401,7 +403,7 @@ fun DialerKey(text: String, onClick: () -> Unit) {
         modifier = Modifier
             .aspectRatio(1f)
             .clip(CircleShape)
-            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+            .background(com.velstrack.app.core.theme.SurfaceGray)
             .clickable { onClick() },
         contentAlignment = Alignment.Center
     ) {

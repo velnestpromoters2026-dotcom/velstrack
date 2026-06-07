@@ -14,9 +14,9 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.velstrack.app.core.theme.DeepSpaceBlack
-import com.velstrack.app.core.theme.ElectricIndigo
-import com.velstrack.app.core.theme.NeonCyan
+import androidx.compose.ui.res.painterResource
+import com.velstrack.app.R
+import com.velstrack.app.core.theme.AbsoluteBlack
 import kotlinx.coroutines.delay
 
 @Composable
@@ -42,30 +42,19 @@ fun SplashScreen(onSplashFinished: () -> Unit) {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(DeepSpaceBlack),
+            .background(AbsoluteBlack),
         contentAlignment = Alignment.Center
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            // Animated Logo Placeholder (A glowing 'V')
-            Box(
+            // New Metallic Logo
+            androidx.compose.foundation.Image(
+                painter = painterResource(id = R.drawable.velstrack_metallic_logo),
+                contentDescription = "Velstrack Logo",
                 modifier = Modifier
-                    .size(100.dp)
+                    .size(160.dp)
                     .scale(scaleAnim.value)
                     .alpha(alphaAnim.value)
-                    .background(
-                        brush = Brush.linearGradient(
-                            colors = listOf(ElectricIndigo, NeonCyan)
-                        ),
-                        shape = androidx.compose.foundation.shape.CircleShape
-                    ),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = "V",
-                    color = DeepSpaceBlack,
-                    style = MaterialTheme.typography.displayLarge.copy(fontWeight = FontWeight.Black),
-                )
-            }
+            )
             
             Spacer(modifier = Modifier.height(24.dp))
             
